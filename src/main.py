@@ -59,16 +59,16 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
 @flow(name='database-update')
-def main(company : str , run_environment : Optional[str] = 'prod'):
+def main(company : str , run_env : str = 'prod'):
 
     logger = get_run_logger() 
     env_path = f'{company}.env'
 
-    if run_environment == 'dev':
+    if run_env == 'dev':
         config = Config.load_from_env(env_path) 
 
-    elif run_environment == 'prod':
-        config = Config.load_from_block(f'bc-project-block-{company.lower()}', env_path)
+    elif run_env == 'prod':
+        config = Config.load_from_block(f'bc-project-config-{company.lower()}', env_path)
        
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
@@ -89,4 +89,4 @@ def main(company : str , run_environment : Optional[str] = 'prod'):
 
 
 if __name__ == '__main__':
-    main(company = 'MEX', ENV = 'dev')
+    main(company = 'MEX', run_env = 'prod')

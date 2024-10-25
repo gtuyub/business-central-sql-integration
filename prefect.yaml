@@ -33,7 +33,7 @@ deployments:
   entrypoint: src/main.py:main
   parameters: {
     company : 'MEX'
-  }
+  } 
   work_pool:
     name: dev
     work_queue_name: null
