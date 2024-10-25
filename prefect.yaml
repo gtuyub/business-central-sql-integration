@@ -32,8 +32,7 @@ deployments:
   flow_name:
   entrypoint: src/main.py:main
   parameters: {
-    company : 'mex',
-    config_block :  'bc-mex-settings'
+    config_block :  'config-bc-mexico'
   } 
   work_pool:
     name: dev

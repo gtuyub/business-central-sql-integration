@@ -3,8 +3,7 @@ from typing import Optional
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from enum import Enum
-from config.settings_block import BCProjectConfig
+from config.config_block import IntegracionBusinessCentral
 
 @dataclass
 class APIConfig:
@@ -69,12 +68,11 @@ class Config:
     def load_from_block(cls, block_name : str, env_path: Optional[Path] = None) -> 'Config':
 
         try:
-            block = BCProjectConfig.load(f'{block_name}')
+            block = IntegracionBusinessCentral.load(f'{block_name}')
 
         except Exception:
-
             cls.create_block_from_env(block_name,env_path)
-            block = BCProjectConfig.load(f'{block_name}')
+            block = IntegracionBusinessCentral.load(f'{block_name}')
 
         api_config = APIConfig(
 
@@ -100,7 +98,7 @@ class Config:
         return cls(api=api_config, db=db_config)
     
     @classmethod
-    def create_block_from_env(cls, block_name : str, env_path : Optional[Path] = None):
+    def create_block_from_env(cls, block_name : str, env_path : Optional[Path] = None, overwrite : bool = True):
 
         if env_path:
             load_dotenv(env_path)
@@ -108,7 +106,7 @@ class Config:
         else:
             load_dotenv()
 
-        block = BCProjectConfig(
+        block = IntegracionBusinessCentral(
             tenant_id = os.getenv('TENANT_ID'),
             environment = os.getenv('ENVIRONMENT'),
             company_id = os.getenv('COMPANY_ID'),
@@ -122,9 +120,8 @@ class Config:
             server = os.getenv('SERVER'),
             database = os.getenv('DATABASE')
         )
-
         valid_block_name = block_name.lower().replace('_','-')
-        block.save(valid_block_name,overwrite=True)
+        block.save(valid_block_name,overwrite)
 
 
 

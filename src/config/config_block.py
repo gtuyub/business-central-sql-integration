@@ -2,7 +2,7 @@ from prefect.blocks.core import Block
 from pydantic.v1 import SecretStr
 from typing import Optional
 
-class BCProjectConfig(Block):
+class IntegracionBusinessCentral(Block):
 
     tenant_id : str
     environment : str

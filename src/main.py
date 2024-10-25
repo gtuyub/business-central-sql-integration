@@ -59,16 +59,16 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
 @flow(name='sincronizar_datos_bc_sql')
-def main(company : str, config_block : Optional[str] = None):
+def main(config_block : Optional[str] = None):
 
     logger = get_run_logger() 
-    env_path = f'{company}.env'
 
-    if not config_block:
-        config = Config.load_from_env(env_path)    
+    if config_block:
+        config = Config.load_from_block(config_block)
+
     else:
-        config = Config.load_from_block(config_block, env_path)
-       
+        config = Config.load_from_env()
+        
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         sql_session = sessionmaker(engine)
@@ -93,4 +93,4 @@ def main(company : str, config_block : Optional[str] = None):
 
 
 if __name__ == '__main__':
-    main(company = 'mex', config_block = 'bc-mex-settings')
+    main()
