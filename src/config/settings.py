@@ -33,13 +33,13 @@ class Config:
     db : DatabaseConfig
 
     @classmethod
-    def load_from_env(cls,env_path: Optional[Path] = None) -> 'Config':
+    def load_from_env(cls,env_path: Optional[Path] = None, override : bool = False) -> 'Config':
 
         if env_path:
-            load_dotenv(env_path)
+            load_dotenv(env_path,override=override)
         
         else:
-            load_dotenv()
+            load_dotenv(override=override)
         
         api_config = APIConfig(
 
@@ -98,13 +98,13 @@ class Config:
         return cls(api=api_config, db=db_config)
     
     @classmethod
-    def create_block_from_env(cls, block_name : str, env_path : Optional[Path] = None, overwrite : bool = True):
+    def create_block_from_env(cls, block_name : str, env_path : Optional[Path] = None, overwrite_block : bool = False, override_env_vars : bool = False):
 
         if env_path:
-            load_dotenv(env_path)
+            load_dotenv(env_path,override=override_env_vars)
         
         else:
-            load_dotenv()
+            load_dotenv(override=override_env_vars)
 
         block = IntegracionBusinessCentral(
             tenant_id = os.getenv('TENANT_ID'),
@@ -121,7 +121,7 @@ class Config:
             database = os.getenv('DATABASE')
         )
         valid_block_name = block_name.lower().replace('_','-')
-        block.save(valid_block_name,overwrite)
+        block.save(valid_block_name,overwrite=overwrite_block)
 
 
 
