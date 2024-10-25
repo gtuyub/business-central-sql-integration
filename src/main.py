@@ -1,5 +1,6 @@
 from config.settings import Config
 from sqlalchemy.orm import sessionmaker, Session, DeclarativeMeta
+from typing import Optional
 from prefect import task, flow
 from prefect.artifacts import create_table_artifact
 from prefect.logging import get_run_logger
@@ -8,10 +9,9 @@ from business_central_api.exceptions import TokenRequestError
 from models.tasks import get_models, create_db_engine, remove_duplicate_objects, insert_records, update_records
 from models.tasks import  get_latest_created_timestamp, get_latest_modified_timestamp
 from models.exceptions import SQLEngineError, SQLModelsError, SyncTableError
-from typing import Optional
 
 
-@task(task_run_name = '{model.__tablename__}')
+@task(task_run_name = 'sincronizar-tabla-{model.__tablename__}')
 def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, db: Session, debug : bool = False):
 
     logger = get_run_logger()
@@ -27,7 +27,7 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
 
         records_to_insert = api_client.get_with_params(entity = model_name,last_created_at = last_created, select = fields)   
         records_to_update = api_client.get_with_params(entity = model_name,last_modified_at = last_modified, select = fields)
-        #new records appear on modified records, so this step removes the duplicates from the list to update
+        #new records appear on modified records. this step removes duplicates from the list to update
         records_to_update = remove_duplicate_objects(model=model,main_list=records_to_update,filter_list=records_to_insert)
 
         if records_to_insert: 
@@ -58,24 +58,28 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         db.rollback()
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
-@flow(name='database-update')
-def main(company : str , run_env : str = 'prod'):
+@flow(name='sincronizar_datos_bc_sql')
+def main(company : str, config_block : Optional[str] = None):
 
     logger = get_run_logger() 
     env_path = f'{company}.env'
 
-    if run_env == 'dev':
-        config = Config.load_from_env(env_path) 
-
-    elif run_env == 'prod':
-        config = Config.load_from_block(f'bc-project-config-{company.lower()}', env_path)
+    if not config_block:
+        config = Config.load_from_env(env_path)    
+    else:
+        config = Config.load_from_block(config_block, env_path)
        
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         sql_session = sessionmaker(engine)
 
-        api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
-                                              config.api.group,config.api.version,config.api.company_id,config.api.client_id,
+        api_client = BusinessCentralAPIClient(config.api.tenant_id,
+                                              config.api.environment,
+                                              config.api.publisher,
+                                              config.api.group,
+                                              config.api.version,
+                                              config.api.company_id,
+                                              config.api.client_id,
                                               config.api.client_secret
                                               )
         sql_tables = get_models()
@@ -89,4 +93,4 @@ def main(company : str , run_env : str = 'prod'):
 
 
 if __name__ == '__main__':
-    main(company = 'MEX', run_env = 'prod')
+    main(company = 'mex', config_block = 'bc-mex-settings')

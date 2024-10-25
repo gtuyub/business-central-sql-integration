@@ -100,7 +100,7 @@ class Config:
         return cls(api=api_config, db=db_config)
     
     @classmethod
-    def create_block_from_env(cls, block_name, env_path : Optional[Path] = None):
+    def create_block_from_env(cls, block_name : str, env_path : Optional[Path] = None):
 
         if env_path:
             load_dotenv(env_path)
@@ -123,7 +123,8 @@ class Config:
             database = os.getenv('DATABASE')
         )
 
-        block.save(block_name,overwrite=True)
+        valid_block_name = block_name.lower().replace('_','-')
+        block.save(valid_block_name,overwrite=True)
 
 
 

@@ -24,15 +24,16 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: actualizacion-base-bc_prod
+- name: actualizar-db-business-central-mexico
   version: null
   tags: []
-  description: Este flujo actualiza la base de datos 'BC_PROD'.
+  description: Este 'deployment' sincroniza las tablas SQL de la base BC_PROD con datos del entorno de Mexico de Business central.
   schedule: {}
   flow_name:
   entrypoint: src/main.py:main
   parameters: {
-    company : 'MEX'
+    company : 'mex',
+    config_block :  'bc-mex-settings'
   } 
   work_pool:
     name: dev
