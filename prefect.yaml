@@ -31,7 +31,9 @@ deployments:
   schedule: {}
   flow_name:
   entrypoint: src/main.py:main
-  parameters: {}
+  parameters: {
+    company : 'MEX'
+  }
   work_pool:
     name: dev
     work_queue_name: null

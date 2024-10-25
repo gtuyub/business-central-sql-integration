@@ -119,7 +119,7 @@ class Config:
             client_secret = os.getenv('CLIENT_SECRET'),
             username = os.getenv('SQL_USER'),
             password = os.getenv('SQL_PASSWORD'),
-            server = 'localhost',
+            server = os.getenv('SERVER'),
             database = os.getenv('DATABASE')
         )
 

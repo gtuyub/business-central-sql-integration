@@ -59,31 +59,25 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
 @flow(name='database-update')
-def main(ENV : Optional[str] = 'prod'):
+def main(company : str , run_environment : Optional[str] = 'prod'):
 
     logger = get_run_logger() 
+    env_path = f'{company}.env'
+
+    if run_environment == 'dev':
+        config = Config.load_from_env(env_path) 
+
+    elif run_environment == 'prod':
+        config = Config.load_from_block(f'bc-project-block-{company.lower()}', env_path)
        
     try:
-        if ENV == 'dev':
-            config = Config.load_from_env() 
-
-        if ENV == 'prod':
-            config = Config.load_from_block(block_name = 'bc-project-block')
-
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         sql_session = sessionmaker(engine)
 
-        api_client = BusinessCentralAPIClient(
-            config.api.tenant_id,
-            config.api.environment,
-            config.api.publisher,
-            config.api.group,
-            config.api.version,
-            config.api.company_id,
-            config.api.client_id,
-            config.api.client_secret
-            )
-    
+        api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
+                                              config.api.group,config.api.version,config.api.company_id,config.api.client_id,
+                                              config.api.client_secret
+                                              )
         sql_tables = get_models()
         for model in sql_tables:
             with sql_session() as db:
@@ -95,4 +89,4 @@ def main(ENV : Optional[str] = 'prod'):
 
 
 if __name__ == '__main__':
-    main(ENV='dev')
+    main(company = 'MEX', ENV = 'dev')
