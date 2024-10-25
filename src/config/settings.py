@@ -76,23 +76,23 @@ class Config:
 
         api_config = APIConfig(
 
-            tenant_id = block.get_tenant_id(),
-            environment = block.get_environment(),
-            company_id = block.get_company_id(),
-            publisher = block.get_publisher(),
-            group = block.get_group(),
-            version = block.get_version(),
-            client_id = block.get_client_id(),
-            client_secret = block.get_client_secret().get_secret_value()
+            tenant_id = block.tenant_id,
+            environment = block.environment,
+            company_id = block.company_id,
+            publisher = block.publisher,
+            group = block.group,
+            version = block.version,
+            client_id = block.client_id,
+            client_secret = block.client_secret.get_secret_value()
 
         )
 
         db_config = DatabaseConfig(
 
-            username = block.get_username().get_secret_value(),
-            password = block.get_password().get_secret_value(),
-            server = block.get_server(),
-            database = block.get_database()
+            username = block.username.get_secret_value(),
+            password = block.password.get_secret_value(),
+            server = block.server,
+            database = block.database
         )
 
         return cls(api=api_config, db=db_config)
