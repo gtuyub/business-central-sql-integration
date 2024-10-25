@@ -27,7 +27,7 @@ deployments:
 - name: actualizacion-base-bc_prod
   version: null
   tags: []
-  description: null
+  description: Este flujo actualiza la base de datos 'BC_PROD'.
   schedule: {}
   flow_name:
   entrypoint: src/main.py:main
