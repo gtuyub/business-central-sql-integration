@@ -3,60 +3,8 @@ from typing import Optional
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from prefect.blocks.core import Block
-from pydantic.v1 import SecretStr
-
-class BCIntegrationConfig(Block):
-
-    tenant_id : str
-    environment : str
-    company_id : str
-    publisher : str
-    group : str
-    version : str
-    client_id : str
-    client_secret : Optional[SecretStr]
-    username : Optional[SecretStr]
-    password : Optional[SecretStr]
-    server : str
-    database : str
-
-    def get_tenant_id(self):
-        return self.tenant_id
-    
-    def get_environment(self):
-        return self.environment
-    
-    def get_company_id(self):
-        return self.company_id
-    
-    def get_publisher(self):
-        return self.publisher
-    
-    def get_group(self):
-        return self.group
-    
-    def get_version(self):
-        return self.version
-    
-    def get_client_id(self):
-        return self.client_id
-    
-    def get_client_secret(self):
-        return self.client_secret
-    
-    def get_username(self):
-        return self.username
-    
-    def get_password(self):
-        return self.password
-    
-    def get_server(self):
-        return self.server
-    
-    def get_database(self):
-        return self.database
-
+from enum import Enum
+from config.settings_block import BCProjectConfig
 
 @dataclass
 class APIConfig:
@@ -83,11 +31,10 @@ class DatabaseConfig:
 @dataclass
 class Config:
     api : APIConfig
-    database : DatabaseConfig
-    debug : bool = False
+    db : DatabaseConfig
 
     @classmethod
-    def from_env(cls,env_path: Optional[Path] = None) -> 'Config':
+    def load_from_env(cls,env_path: Optional[Path] = None) -> 'Config':
 
         if env_path:
             load_dotenv(env_path)
@@ -116,19 +63,18 @@ class Config:
             database = os.getenv('DATABASE')
         )
 
-        return cls(api=api_config, database=db_config)
+        return cls(api=api_config, db=db_config)
     
     @classmethod
-    def from_prefect_block(cls, block_name : str, env_path: Optional[Path] = None) -> 'Config':
+    def load_from_block(cls, block_name : str, env_path: Optional[Path] = None) -> 'Config':
 
         try:
-
-            block = BCIntegrationConfig.load(f'{block_name}')
+            block = BCProjectConfig.load(f'{block_name}')
 
         except Exception:
 
             cls.create_block_from_env(block_name,env_path)
-            block = BCIntegrationConfig.load(f'{block_name}')
+            block = BCProjectConfig.load(f'{block_name}')
 
         api_config = APIConfig(
 
@@ -151,7 +97,7 @@ class Config:
             database = block.get_database()
         )
 
-        return cls(api=api_config, database=db_config)
+        return cls(api=api_config, db=db_config)
     
     @classmethod
     def create_block_from_env(cls, block_name, env_path : Optional[Path] = None):
@@ -162,7 +108,7 @@ class Config:
         else:
             load_dotenv()
 
-        block = BCIntegrationConfig(
+        block = BCProjectConfig(
             tenant_id = os.getenv('TENANT_ID'),
             environment = os.getenv('ENVIRONMENT'),
             company_id = os.getenv('COMPANY_ID'),
@@ -173,7 +119,7 @@ class Config:
             client_secret = os.getenv('CLIENT_SECRET'),
             username = os.getenv('SQL_USER'),
             password = os.getenv('SQL_PASSWORD'),
-            server = os.getenv('SERVER'),
+            server = 'localhost',
             database = os.getenv('DATABASE')
         )
 

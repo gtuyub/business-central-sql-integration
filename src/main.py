@@ -5,8 +5,10 @@ from prefect.artifacts import create_table_artifact
 from prefect.logging import get_run_logger
 from business_central_api.client import BusinessCentralAPIClient
 from business_central_api.exceptions import TokenRequestError
-from models.tasks import get_models, create_db_engine, remove_duplicate_objects, insert_records, update_records, get_latest_created_timestamp, get_latest_modified_timestamp
+from models.tasks import get_models, create_db_engine, remove_duplicate_objects, insert_records, update_records
+from models.tasks import  get_latest_created_timestamp, get_latest_modified_timestamp
 from models.exceptions import SQLEngineError, SQLModelsError, SyncTableError
+from typing import Optional
 
 
 @task(task_run_name = '{model.__tablename__}')
@@ -21,7 +23,7 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
     fields = model.__mapper__.c.keys()
 
     try:
-        logger.info(f'Starting workflow for table : {model.__tablename__}')
+        logger.info(f'Starting sync process for table : {model.__tablename__}')
 
         records_to_insert = api_client.get_with_params(entity = model_name,last_created_at = last_created, select = fields)   
         records_to_update = api_client.get_with_params(entity = model_name,last_modified_at = last_modified, select = fields)
@@ -36,7 +38,7 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
             logger.info(f'records inserted successfully on {model.__tablename__}')
         
         else:
-            logger.info(f'There are no records to insert on table {model.__tablename__}')
+            logger.info(f'No records to insert on table {model.__tablename__}')
 
         if records_to_update:
 
@@ -46,7 +48,7 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
             logger.info(f'records updated successfully on {model.__tablename__}')
         
         else:
-            logger.info(f'There are no records to update on table {model.__tablename__}')
+            logger.info(f'No records to update on table {model.__tablename__}')
 
         if debug:
             db.rollback()
@@ -56,20 +58,20 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         db.rollback()
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
-@flow(name='Database-Update')
-def main():
+@flow(name='database-update')
+def main(ENV : Optional[str] = 'prod'):
+
     logger = get_run_logger() 
        
     try:
-        #config = Config.from_env()
-        config = Config.from_prefect_block(block_name = 'bc-integration-block')
+        if ENV == 'dev':
+            config = Config.load_from_env() 
 
-        engine = create_db_engine(
-            config.database.server,
-            config.database.database,
-            config.database.username,
-            config.database.password
-            )
+        if ENV == 'prod':
+            config = Config.load_from_block(block_name = 'bc-project-block')
+
+        engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
+        sql_session = sessionmaker(engine)
 
         api_client = BusinessCentralAPIClient(
             config.api.tenant_id,
@@ -81,10 +83,8 @@ def main():
             config.api.client_id,
             config.api.client_secret
             )
-        
-        sql_session = sessionmaker(engine)
+    
         sql_tables = get_models()
-
         for model in sql_tables:
             with sql_session() as db:
                 sync_table.submit(model,api_client,db).wait()
@@ -95,4 +95,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(ENV='dev')

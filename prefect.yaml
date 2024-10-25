@@ -1,0 +1,38 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: bc-integration-env
+prefect-version: 2.19.1
+
+# build section allows you to manage and build docker images
+build: null
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push: null
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect.deployments.steps.git_clone:
+    id: clone-step
+    repository: https://github.com/gtuyub/b_central_sql_integration.git
+    branch: main
+- prefect.deployments.steps.pip_install_requirements:
+   directory: "{{clone-step.directory}}"
+   requirements_file: requirements.txt
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: actualizacion-base-bc_prod
+  version: null
+  tags: []
+  description: null
+  schedule: {}
+  flow_name:
+  entrypoint: src/main.py:main
+  parameters: {}
+  work_pool:
+    name: dev
+    work_queue_name: null
+    job_variables: {}
