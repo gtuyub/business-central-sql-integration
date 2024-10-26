@@ -19,25 +19,6 @@ class CustomString(types.TypeDecorator):
     
     def copy(self, **kw):
         return CustomString(self.impl.length)
-    
-class CurrencyString(types.TypeDecorator):
-    """ Custom String class which converts the placeholder '',
-    for currency fields into the default currency."""
-
-    impl = types.String
-    cache_ok = True
-
-    def process_bind_param(self,value,dialect):
-        if value == '' or value == ' ':
-            return 'MXN'
-        return value
-    
-    def process_result_value(self, value, dialect):
-        return value
-    
-    def copy(self, **kw):
-        return CurrencyString(self.impl.length)
-    
 
     
 def update_priority(value: int):
@@ -61,8 +42,8 @@ class exchangeRates(Base):
     __tablename__ = 'ExchangeRate'
 
     startingDate = Column('starting_date',types.Date,primary_key=True)
-    currencyCode = Column('currency_code',CurrencyString,primary_key=True)
-    relationalCurrencyCode = Column('relational_currency_code',CurrencyString,primary_key=True)
+    currencyCode = Column('currency_code',CustomString,primary_key=True)
+    relationalCurrencyCode = Column('relational_currency_code',CustomString,primary_key=True)
     exchangeRateAmount = Column('amount',types.Float)
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
@@ -234,7 +215,7 @@ class customerLedgerEntries(Base):
     documentType = Column('document_type',CustomString)
     documentNo = Column('document_no',types.String)
     customerNo = Column('customer_code',types.String)
-    currencyCode = Column('currency_code',CurrencyString)
+    currencyCode = Column('currency_code',CustomString)
     amount = Column('amount',types.Float)
     remainingAmount = Column('remaining_amount',types.Float)
     positive = Column('is_positive',types.Boolean)
@@ -260,7 +241,7 @@ class vendorLedgerEntries(Base):
     documentType = Column('document_type',CustomString)
     documentNo = Column('document_no',types.String)
     vendorNo = Column('vendor_code',types.String)
-    currencyCode = Column('currency_code',CurrencyString)
+    currencyCode = Column('currency_code',CustomString)
     amount = Column('amount',types.Float)
     remainingAmount = Column('remaining_amount',types.Float)
     positive = Column('is_positive',types.Boolean)
@@ -289,7 +270,7 @@ class salesInvoices(Base):
     paymentMethodCode = Column('payment_method_code',CustomString)
     shipmentMethodCode = Column('shipment_method_code',CustomString)
     locationCode = Column('location_code',CustomString)
-    currencyCode = Column('currency_code',CurrencyString)
+    currencyCode = Column('currency_code',CustomString)
     salespersonCode = Column('salesperson_code',CustomString)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
@@ -327,7 +308,7 @@ class salesCreditMemos(Base):
     paymentMethodCode = Column('payment_method_code',CustomString)
     shipmentMethodCode = Column('shipment_method_code',CustomString)
     locationCode = Column('location_code',CustomString)
-    currencyCode = Column('currency_code',CurrencyString)
+    currencyCode = Column('currency_code',CustomString)
     salespersonCode = Column('salesperson_code',CustomString)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
@@ -362,7 +343,7 @@ class purchaseInvoices(Base):
     documentDate = Column('document_date',types.Date)
     buyFromVendorNo = Column('vendor_code',CustomString)
     paymentMethodCode = Column('payment_method_code',CustomString)
-    currencyCode = Column('currency_code',CurrencyString)
+    currencyCode = Column('currency_code',CustomString)
     purchaserCode = Column('purchaser_code',CustomString)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
@@ -380,7 +361,7 @@ class purchaseCreditMemos(Base):
     documentDate = Column('document_date',types.Date)
     buyFromVendorNo = Column('vendor_code',CustomString)
     paymentMethodCode = Column('payment_method_code',CustomString)
-    currencyCode = Column('currency_code',CurrencyString)
+    currencyCode = Column('currency_code',CustomString)
     purchaserCode = Column('purchaser_code',CustomString)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
