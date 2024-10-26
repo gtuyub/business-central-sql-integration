@@ -22,7 +22,7 @@ class CustomString(types.TypeDecorator):
 
     
 def update_priority(value: int):
-    """ Decorator which provides the order on which the tables are updated on the main script."""
+    """ Decorator that provides the order on which the tables are updated on the main script."""
     def decorator(cls):
         cls.update_priority = value
         return cls
@@ -404,10 +404,3 @@ class purchaseCreditMemoLines(Base):
     amountIncludingVAT = Column('amount_with_vat',types.Float)
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
-
-
-    
-if __name__ == '__main__':
-
-    print([col for col in exchangeRates.__mapper__.c.keys() if getattr(exchangeRates,col).primary_key])
-
