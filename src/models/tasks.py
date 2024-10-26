@@ -2,6 +2,7 @@ from .base import Base
 from .exceptions import SQLEngineError,SQLModelsError, InsertOperationError, UpdateOperationError
 import sqlalchemy
 from sqlalchemy.orm import DeclarativeMeta, Session
+from sqlalchemy.orm.exc import StaleDataError
 import importlib
 import inspect
 import logging
@@ -69,10 +70,16 @@ def update_records(records : List[Dict[str,str]], model : DeclarativeMeta , db: 
             logger.info('attempting bulk update operation...')
             db.bulk_update_mappings(model,records)
             logger.info(f'all records updated successfully on table {model.__tablename__}.')
+        
+        except StaleDataError as e:
+            db.rollback()
+            raise StaleDataError(f'Could not update table {model.__tablename__}, this could be due to a primary key value being modified on the table : {e}')
 
         except Exception as e:
             db.rollback()
             raise UpdateOperationError(f'Could not update records from table {model.__tablename__}: {e}')
+
+        
         
 
 def get_latest_created_timestamp(model : DeclarativeMeta, db: Session) -> datetime:
