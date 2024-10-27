@@ -12,12 +12,13 @@ def main(block_name : str, env_path : Path):
 
     click.echo(f'Está creando un bloque de configuración para el proyecto en el servidor : {api_url}')
 
-    Config.create_block_from_env(block_name,env_path,overwrite_block=True,override_env_vars=True)
-
     if not click.confirm("¿Desea continuar con la creación del bloque en esta dirección?"):
         click.echo("Operación cancelada por el usuario.")
         return
     
+    Config.create_block_from_env(block_name,env_path,overwrite_block=True,override_env_vars=True)
+
+
     click.echo(f"Bloque '{block_name}' creado con la configuración del archivo '{env_path}' en {api_url} :)")
 
 
