@@ -154,20 +154,3 @@ class BusinessCentralAPIClient(requests.Session):
             logger.warning(f'No items in response for entity {entity}')
 
         return result
-
-
-
-    
-
-
-
-            
-
-
-
-
-
-
-             
-
-
