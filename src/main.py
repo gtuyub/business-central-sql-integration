@@ -74,23 +74,19 @@ def main(config_block : Optional[str] = None, tables : Optional[List[ModelsEnum]
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         sql_session = sessionmaker(engine)
 
-        api_client = BusinessCentralAPIClient(config.api.tenant_id,
-                                              config.api.environment,
-                                              config.api.publisher,
-                                              config.api.group,
-                                              config.api.version,
-                                              config.api.company_id,
-                                              config.api.client_id,
-                                              config.api.client_secret
-                                              )
+        api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
+                                              config.api.group,config.api.version,config.api.company_id,
+                                              config.api.client_id,config.api.client_secret)
+        
         sql_tables = get_models(tables)
         for model in sql_tables:
             with sql_session() as db:
-                sync_table.submit(model,api_client,db,debug=True).wait()
+                sync_table.submit(model,api_client,db).wait()
 
     except (SQLEngineError, TokenRequestError, ModelRetrievalError):
         logger.critical(f'The workflow cannot be processed due to a critical error.')
         raise 
+
 
 
 if __name__ == '__main__':
