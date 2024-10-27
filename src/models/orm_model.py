@@ -1,6 +1,7 @@
 from .base import Base
 import sqlalchemy.types as types
 from sqlalchemy import Column
+from enum import Enum
 
 class CustomString(types.TypeDecorator):
     """ Custom String class which converts the placeholders '' to None,
@@ -20,15 +21,7 @@ class CustomString(types.TypeDecorator):
     def copy(self, **kw):
         return CustomString(self.impl.length)
 
-    
-def update_priority(value: int):
-    """ Decorator that provides the order on which the tables are updated on the main script."""
-    def decorator(cls):
-        cls.update_priority = value
-        return cls
-    return decorator
 
-@update_priority(1)
 class currencies(Base):
     __tablename__ = 'Currency'
 
@@ -37,7 +30,7 @@ class currencies(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(2)
+
 class exchangeRates(Base):
     __tablename__ = 'ExchangeRate'
 
@@ -48,7 +41,7 @@ class exchangeRates(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class paymentTerms(Base):
     __tablename__ = 'PaymentTerms'
 
@@ -57,7 +50,7 @@ class paymentTerms(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class countries(Base):
     __tablename__ = 'Country'
 
@@ -66,7 +59,7 @@ class countries(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class shipmentMethods(Base):
     __tablename__ = 'ShipmentMethod'
 
@@ -75,7 +68,7 @@ class shipmentMethods(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class priceGroups(Base):
     __tablename__ = 'CustomerPriceGroup'
 
@@ -84,7 +77,7 @@ class priceGroups(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class locations(Base):
     __tablename__ = 'Location'
 
@@ -93,7 +86,7 @@ class locations(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class paymentMethods(Base):
     __tablename__ = 'PaymentMethod'
 
@@ -102,7 +95,7 @@ class paymentMethods(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class itemCategories(Base):
     __tablename__ = 'ItemCategory'
 
@@ -113,7 +106,7 @@ class itemCategories(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class customerPostingGroups(Base):
     __tablename__ = 'CustomerPostingGroup'
 
@@ -122,7 +115,7 @@ class customerPostingGroups(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class vendorPostingGroups(Base):
     __tablename__ = 'VendorPostingGroup'
 
@@ -131,7 +124,7 @@ class vendorPostingGroups(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(1)
+
 class inventoryPostingGroups(Base):
     __tablename__ = 'InventoryPostingGroup'
 
@@ -140,7 +133,7 @@ class inventoryPostingGroups(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(3)
+
 class customers(Base):
     __tablename__ = 'Customer'
 
@@ -158,7 +151,7 @@ class customers(Base):
     systemCreatedAt = Column('created_at', types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(3)
+
 class vendors(Base):
     __tablename__ = 'Vendor'
 
@@ -175,7 +168,7 @@ class vendors(Base):
     systemCreatedAt = Column('created_at', types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(2)
+
 class salesmen(Base):
     __tablename__ = 'Salesperson'
 
@@ -185,7 +178,7 @@ class salesmen(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(2)
+
 class items(Base):
     __tablename__ = 'Item'
 
@@ -205,7 +198,7 @@ class items(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(4)
+
 class customerLedgerEntries(Base):
     __tablename__ = 'CustomerLedger'
 
@@ -231,7 +224,7 @@ class customerLedgerEntries(Base):
     systemModifiedAt = Column('modified_at',types.DateTime)
 
 
-@update_priority(4)
+
 class vendorLedgerEntries(Base):
     __tablename__ = 'VendorLedger'
 
@@ -257,7 +250,7 @@ class vendorLedgerEntries(Base):
     systemModifiedAt = Column('modified_at',types.DateTime)
 
 
-@update_priority(5)
+
 class salesInvoices(Base):
     __tablename__ = 'SalesInvoice'
 
@@ -278,7 +271,7 @@ class salesInvoices(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(6)
+
 class salesInvoiceLines(Base):
     __tablename__ = 'SalesInvoiceLine'
 
@@ -295,7 +288,7 @@ class salesInvoiceLines(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(5)
+
 class salesCreditMemos(Base):
     __tablename__ = 'SalesCrMemo'
 
@@ -316,7 +309,7 @@ class salesCreditMemos(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(6)    
+    
 class salesCreditMemoLines(Base):
     __tablename__ = 'SalesCrMemoLine'
 
@@ -333,7 +326,7 @@ class salesCreditMemoLines(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(5)
+
 class purchaseInvoices(Base):
     __tablename__ = 'purchaseInvoice'
 
@@ -351,7 +344,7 @@ class purchaseInvoices(Base):
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
 
-@update_priority(5)
+
 class purchaseCreditMemos(Base):
     __tablename__ = 'PurchaseCrMemo'
 
@@ -370,7 +363,7 @@ class purchaseCreditMemos(Base):
     systemModifiedAt = Column('modified_at',types.DateTime)
 
 
-@update_priority(6)
+
 class purchaseInvoiceLines(Base):
     __tablename__ = 'PurchaseInvoiceLine'
 
@@ -388,7 +381,7 @@ class purchaseInvoiceLines(Base):
     systemModifiedAt = Column('modified_at',types.DateTime)
 
 
-@update_priority(6)
+
 class purchaseCreditMemoLines(Base):
     __tablename__ = 'PurchaseCrMemoLine'
 
@@ -404,3 +397,33 @@ class purchaseCreditMemoLines(Base):
     amountIncludingVAT = Column('amount_with_vat',types.Float)
     systemCreatedAt = Column('created_at',types.DateTime)
     systemModifiedAt = Column('modified_at',types.DateTime)
+
+
+class TablasSQL(Enum):
+
+    currencies = 'Divisas'
+    paymentTerms = 'Terminos de Pago'
+    countries = 'Paises'
+    shipmentMethods = 'Metodos de Entrega'
+    priceGroups = 'Grupos de Precios Cliente'
+    locations = 'Almacenes'
+    paymentMethods = 'Metodos de Pago'
+    itemCategories = 'Categorias de Producto'
+    customerPostingGroups = 'Grupos de Cliente'
+    inventoryPostingGroups = 'Grupos de Inventario'
+    vendorPostingGroups = 'Grupos de Proveedor'
+    exchangeRates = 'Tipos de Cambio'
+    salesmen = 'Vendedores'
+    items = 'Productos'
+    customers = 'Clientes'
+    vendors = 'Proveedores'
+    customerLedgerEntries = 'Movimientos Clientes'
+    vendorLedgerEntries = 'Movimientos Proveedores'
+    salesInvoices = 'Facturas Venta'
+    salesInvoiceLines = 'Lineas Facturas Venta'
+    salesCreditMemos = 'Notas de Credito Venta'
+    salesCreditMemoLines = 'Lineas Notas de Credito Venta'
+    purchaseInvoices = 'Facturas Compra'
+    purchaseInvoiceLines = 'Lineas Facturas Compra'
+    purchaseCreditMemos = 'Notas de Credito Compra'
+    purchaseCreditMemoLines = 'Lineas Notas de Credito Compra'

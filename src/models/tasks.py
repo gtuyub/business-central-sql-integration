@@ -1,27 +1,34 @@
 from .base import Base
+from .orm_model import TablasSQL
 from .exceptions import SQLEngineError,SQLModelsError, InsertOperationError, UpdateOperationError
 import sqlalchemy
-from sqlalchemy.orm import DeclarativeMeta, Session
-from sqlalchemy.orm.exc import StaleDataError
 import importlib
+from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm.exc import StaleDataError
 import inspect
 import logging
-from typing import List, Dict
+from typing import List, Dict, Type, Optional
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def get_models() -> List[DeclarativeMeta]:
-    try:
-        models_module = importlib.import_module('.orm_model',package='models')
-        models = [cls for _,cls in inspect.getmembers(models_module,inspect.isclass) if issubclass(cls,Base) and cls is not Base]
-        logger.info(f'{len(models)} SQLAlchemy base models retrieved from package.')
-        models.sort(key = lambda cls: getattr(cls,'update_priority',100))
-        logger.info(f'tables retrieved : {[model.__tablename__ for model in models]}')
+def get_models(tables : Optional[List[TablasSQL]] = None) -> List[Type[DeclarativeBase]]:
 
-    except Exception as e:
-        raise SQLModelsError(f'Cannot retrieve the ORM models from specified module due to following error : {e}')
+    models_module = importlib.import_module('.orm_model',package='models')
+
+    if tables:      
+        models = [getattr(models_module,t.name) for t in tables]      
+    else:
+        try:
+
+            models = [
+                cls for _,cls in inspect.getmembers(models_module,inspect.isclass) 
+                if issubclass(cls,Base) and cls is not Base
+                ]
+        except Exception as e:
+            raise SQLModelsError(f'Cannot retrieve the ORM models from orm module due to following error : {e}')   
+    logger.info(f'tables retrieved for update :\n {[model.__tablename__ for model in models]}')
     return models
 
 def create_db_engine(server,database,username,password) -> sqlalchemy.Engine:
@@ -35,7 +42,7 @@ def create_db_engine(server,database,username,password) -> sqlalchemy.Engine:
     except Exception as e:
         raise SQLEngineError(f'Cannot create database engine with context:\n server : {server} \n database : {database}\n Error : {e}')
         
-def remove_duplicate_objects(model : DeclarativeMeta, main_list : List[Dict[str,str]], filter_list : List[Dict[str,str]]) -> List[Dict[str,str]]:
+def remove_duplicate_objects(model : Type[DeclarativeBase], main_list : List[Dict[str,str]], filter_list : List[Dict[str,str]]) -> List[Dict[str,str]]:
     if main_list and filter_list:
 
         p_keys = [k for k in model.__mapper__.c.keys() if getattr(model,k).primary_key]
@@ -45,7 +52,7 @@ def remove_duplicate_objects(model : DeclarativeMeta, main_list : List[Dict[str,
     
     return main_list
 
-def insert_records(records : List[Dict[str,str]], model : DeclarativeMeta , db: Session) -> None:
+def insert_records(records : List[Dict[str,str]], model : Type[DeclarativeBase] , db: Session) -> None:
     if records:
         #removing @odata.etag key included on every response of the API
         for item in records:
@@ -60,7 +67,7 @@ def insert_records(records : List[Dict[str,str]], model : DeclarativeMeta , db: 
             db.rollback()
             raise InsertOperationError(f'Could not insert records into table {model.__tablename__}: {e}')
 
-def update_records(records : List[Dict[str,str]], model : DeclarativeMeta , db: Session) -> None:
+def update_records(records : List[Dict[str,str]], model : Type[DeclarativeBase] , db: Session) -> None:
     if records:
         #removing @odata.etag key included on every response of the API
         for item in records:
@@ -80,14 +87,12 @@ def update_records(records : List[Dict[str,str]], model : DeclarativeMeta , db: 
             raise UpdateOperationError(f'Could not update records from table {model.__tablename__}: {e}')
 
         
-        
-
-def get_latest_created_timestamp(model : DeclarativeMeta, db: Session) -> datetime:
+def get_latest_created_timestamp(model : Type[DeclarativeBase], db: Session) -> datetime:
     timestamp = db.query(sqlalchemy.func.max(model.systemCreatedAt)).scalar()
 
     return timestamp
 
-def get_latest_modified_timestamp(model : DeclarativeMeta, db: Session) -> datetime:
+def get_latest_modified_timestamp(model : Type[DeclarativeBase], db: Session) -> datetime:
     timestamp = db.query(sqlalchemy.func.max(model.systemModifiedAt)).scalar()
 
     return timestamp
