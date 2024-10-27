@@ -92,7 +92,6 @@ class BusinessCentralAPIClient(requests.Session):
 
         return response
     
-
     
     def paginated_get_request(self, url : str, params : dict = None):
 
