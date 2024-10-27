@@ -1,7 +1,7 @@
 from config.settings import Config
 from sqlalchemy.orm import sessionmaker, Session, DeclarativeMeta
 from typing import Optional, List
-from models.orm_model import TablasSQL
+from models.orm_model import ModelsEnum
 from prefect import task, flow
 from prefect.artifacts import create_table_artifact
 from prefect.logging import get_run_logger
@@ -9,7 +9,7 @@ from business_central_api.client import BusinessCentralAPIClient
 from business_central_api.exceptions import TokenRequestError
 from models.tasks import get_models, create_db_engine, remove_duplicate_objects, insert_records, update_records
 from models.tasks import  get_latest_created_timestamp, get_latest_modified_timestamp
-from models.exceptions import SQLEngineError, SQLModelsError, SyncTableError
+from models.exceptions import SQLEngineError, ModelRetrievalError, SyncTableError
 
 
 @task(task_run_name = 'sincronizar-tabla-{model.__tablename__}')
@@ -60,7 +60,7 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
 @flow(name='sincronizar_datos_bc_sql')
-def main(config_block : Optional[str] = None, tables : Optional[List[TablasSQL]] = None):
+def main(config_block : Optional[str] = None, tables : Optional[List[ModelsEnum]] = None):
 
     logger = get_run_logger() 
 
@@ -88,7 +88,7 @@ def main(config_block : Optional[str] = None, tables : Optional[List[TablasSQL]]
             with sql_session() as db:
                 sync_table.submit(model,api_client,db,debug=True).wait()
 
-    except (SQLEngineError, TokenRequestError, SQLModelsError):
+    except (SQLEngineError, TokenRequestError, ModelRetrievalError):
         logger.critical(f'The workflow cannot be processed due to a critical error.')
         raise 
 
