@@ -16,9 +16,7 @@ from models.exceptions import SQLEngineError, ModelRetrievalError, SyncTableErro
 def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Session):
 
     logger = get_run_logger()
-
     timestamps = model.get_sync_timestamps(db)
-
     model_name = model.__name__
     table_name = model.__tablename__
     fields = model.__mapper__.c.keys()
@@ -30,21 +28,26 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
     modified_records = filter_duplicates_by_pk(model,modified_records,new_records)
 
     try:
-        if new_records:
+        if new_records or modified_records:
 
-            logger.info(f'{len(new_records)} registros nuevos encontrados para insertar en la tabla {table_name}')
-            model.insert_records(new_records, db)
-            logger.info('operacion de insercion finalizada correctamente.')
-            create_table_artifact(new_records, 'registros-nuevos')
+            if new_records:
 
-        if modified_records:
+                logger.info(f'{len(new_records)} registros nuevos encontrados para insertar en la tabla {table_name}')
+                model.insert_records(new_records, db)
+                logger.info('operacion de insercion finalizada correctamente.')
+                create_table_artifact(new_records, 'registros-nuevos')
 
-            logger.info(f'{len(modified_records)} registros modificados encontrados para actualizar en la tabla {table_name}')
-            model.update_records(modified_records, db)
-            logger.info('operacion de actualizacion finalizada correctamente')
-            create_table_artifact(modified_records,'registros-actualizados')
+            if modified_records:
 
-        db.commit()
+                logger.info(f'{len(modified_records)} registros modificados encontrados para actualizar en la tabla {table_name}')
+                model.update_records(modified_records, db)
+                logger.info('operacion de actualizacion finalizada correctamente')
+                create_table_artifact(modified_records,'registros-actualizados')
+                
+            db.commit()
+        
+        else:
+            logger.info(f'No se encontraron registros para actualizar o modificar en la tabla {table_name}.')
 
     except Exception as e:
         db.rollback()
@@ -55,11 +58,7 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
 def main(config_block : Optional[str] = None, tables_filter : Optional[List[TablesEnum]] = None):
 
     logger = get_run_logger()
-
-    if config_block:
-        config = Config.load_from_block(config_block)
-    else:
-        config = Config.load_from_env()
+    config = Config.load_from_block(config_block) if config_block else Config.load_from_env()
 
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
@@ -76,6 +75,9 @@ def main(config_block : Optional[str] = None, tables_filter : Optional[List[Tabl
     except (SQLEngineError, TokenRequestError, ModelRetrievalError):
         logger.critical('No se puede ejecutar el flujo debido a un error critico.')
         raise 
+
+    finally:
+        engine.dispose()
 
 
 if __name__ == '__main__':
