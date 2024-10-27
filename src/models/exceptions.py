@@ -2,7 +2,7 @@
 class SQLEngineError(Exception):
     pass
 
-class SQLModelsError(Exception):
+class ModelRetrievalError(Exception):
     pass
 
 class InsertOperationError(Exception):

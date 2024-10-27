@@ -4,8 +4,8 @@ from sqlalchemy import Column
 from enum import Enum
 
 class CustomString(types.TypeDecorator):
-    """ Custom String class which converts the placeholders '' to None,
-    which translates to SQL NULL when inserting on the database."""
+    """clase string personalizada para mapear 'empty strings' a None, que a su vez SQLAlchemy 
+    mapea a NULL al interactuar con la base de datos."""
 
     impl = types.String
     cache_ok = True
@@ -21,6 +21,11 @@ class CustomString(types.TypeDecorator):
     def copy(self, **kw):
         return CustomString(self.impl.length)
 
+
+#subclases de la clase <Base>, representan las tablas de la base de datos.
+#Con el propósito de simplificar, el nombre de las clases coincide con el nombre del endpoint de la API de BC.
+#Así mismo, los nombres de las columnas en cada clase, coinciden con los campos en la API de BC.
+#Por lo tanto, aquí se están mapeando los campos de la API con los nombres de las columnas en SQL.
 
 class currencies(Base):
     __tablename__ = 'Currency'
@@ -399,7 +404,10 @@ class purchaseCreditMemoLines(Base):
     systemModifiedAt = Column('modified_at',types.DateTime)
 
 
-class TablasSQL(Enum):
+class ModelsEnum(str,Enum) :
+    """subclase de Enum que define una descripción para cada modelo SQLALchemy.
+    Cuando se ejecuta un 'flow' o 'deployment' en modo personalizado en el servidor de Prefect, 
+    te permite escoger con un 'dropdown' que tablas actualizar, en base a las descripciones en este Enum."""
 
     currencies = 'Divisas'
     paymentTerms = 'Terminos de Pago'
