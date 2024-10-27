@@ -1,6 +1,7 @@
 from config.settings import Config
 from sqlalchemy.orm import sessionmaker, Session, DeclarativeMeta
-from typing import Optional
+from typing import Optional, List
+from models.orm_model import TablasSQL
 from prefect import task, flow
 from prefect.artifacts import create_table_artifact
 from prefect.logging import get_run_logger
@@ -59,7 +60,7 @@ def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, d
         raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
 
 @flow(name='sincronizar_datos_bc_sql')
-def main(config_block : Optional[str] = None):
+def main(config_block : Optional[str] = None, tables : Optional[List[TablasSQL]] = None):
 
     logger = get_run_logger() 
 
@@ -82,10 +83,10 @@ def main(config_block : Optional[str] = None):
                                               config.api.client_id,
                                               config.api.client_secret
                                               )
-        sql_tables = get_models()
+        sql_tables = get_models(tables)
         for model in sql_tables:
             with sql_session() as db:
-                sync_table.submit(model,api_client,db).wait()
+                sync_table.submit(model,api_client,db,debug=True).wait()
 
     except (SQLEngineError, TokenRequestError, SQLModelsError):
         logger.critical(f'The workflow cannot be processed due to a critical error.')
