@@ -16,10 +16,10 @@ from models.exceptions import SQLEngineError, ModelRetrievalError, SyncTableErro
 def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Session):
 
     logger = get_run_logger()
-    timestamps = model.get_sync_timestamps(db)
     model_name = model.__name__
     table_name = model.__tablename__
     fields = model.__mapper__.c.keys()
+    timestamps = model.get_sync_timestamps(db)
 
     logger.info(f'Iniciando proceso de sincronizacion.\n tabla : {table_name}')
 
@@ -62,21 +62,24 @@ def main(config_block : Optional[str] = None, tables_filter : Optional[List[Tabl
 
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
-        sql_session = sessionmaker(engine)
+        session = sessionmaker(engine)
         api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
                                               config.api.group,config.api.version,config.api.company_id,
                                               config.api.client_id,config.api.client_secret)
    
-        sql_tables = get_all_models(tables_filter)
-        for model in sql_tables:
-            with sql_session() as db:
+        sql_models = get_all_models(tables_filter)
+
+        for model in sql_models:
+            with session() as db:
                 sync_table.submit(model,api_client,db).wait()
 
     except (SQLEngineError, TokenRequestError, ModelRetrievalError):
+
         logger.critical('No se puede ejecutar el flujo debido a un error critico.')
         raise 
 
     finally:
+        
         engine.dispose()
 
 

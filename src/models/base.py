@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import List, Dict
 from .exceptions import InsertOperationError, UpdateOperationError
 
-#clase base para los modelos SQLAlchemy.
-#contiene los campos created_at y modified_at, que se utilizan para filtrar la API de BC.
+
 class Base(DeclarativeBase):
+    """clase base de los modelos SQLAlchemy. cada una de las subclases de esta clase representa una tabla SQL en la base de datos."""
 
     __abstract__ = True
 
