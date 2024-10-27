@@ -1,92 +1,84 @@
 from config.settings import Config
-from sqlalchemy.orm import sessionmaker, Session, DeclarativeMeta
-from typing import Optional, List
-from models.orm_model import ModelsEnum
+from sqlalchemy.orm import sessionmaker, Session
+from typing import Optional, List, Type
+from models.orm_model import TablesEnum
+from models.base import Base
 from prefect import task, flow
 from prefect.artifacts import create_table_artifact
 from prefect.logging import get_run_logger
 from business_central_api.client import BusinessCentralAPIClient
 from business_central_api.exceptions import TokenRequestError
-from models.tasks import get_models, create_db_engine, remove_duplicate_objects, insert_records, update_records
-from models.tasks import  get_latest_created_timestamp, get_latest_modified_timestamp
+from models.tasks import get_all_models, create_db_engine, filter_duplicates_by_pk
 from models.exceptions import SQLEngineError, ModelRetrievalError, SyncTableError
 
 
 @task(task_run_name = 'sincronizar-tabla-{model.__tablename__}')
-def sync_table(model : DeclarativeMeta, api_client : BusinessCentralAPIClient, db: Session, debug : bool = False):
+def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Session):
 
     logger = get_run_logger()
 
-    last_created = get_latest_created_timestamp(model, db)
-    last_modified = get_latest_modified_timestamp(model,db)
-        
+    timestamps = model.get_sync_timestamps(db)
+
     model_name = model.__name__
+    table_name = model.__tablename__
     fields = model.__mapper__.c.keys()
 
+    logger.info(f'Iniciando proceso de sincronización.\n tabla : {table_name}')
+
+    new_records = api_client.get_with_params(entity=model_name,last_created_at=timestamps['last_created'],select=fields)
+    modified_records = api_client.get_with_params(entity=model_name,last_modified_at=timestamps['last_modified'],select=fields)
+    modified_records = filter_duplicates_by_pk(model,modified_records,new_records)
+
     try:
-        logger.info(f'Starting sync process for table : {model.__tablename__}')
+        if new_records:
 
-        records_to_insert = api_client.get_with_params(entity = model_name,last_created_at = last_created, select = fields)   
-        records_to_update = api_client.get_with_params(entity = model_name,last_modified_at = last_modified, select = fields)
-        #new records appear on modified records. this step removes duplicates from the list to update
-        records_to_update = remove_duplicate_objects(model=model,main_list=records_to_update,filter_list=records_to_insert)
+            logger.info(f'{len(new_records)} registros nuevos encontrados para insertar en la tabla {table_name}')
+            model.insert_records(new_records, db)
+            logger.info('operacion de insercion finalizada correctamente.')
+            create_table_artifact(new_records, 'registros-nuevos')
 
-        if records_to_insert: 
+        if modified_records:
 
-            logger.info(f'{len(records_to_insert)} records to insert found on entity {model_name}.')
-            insert_records(records_to_insert,model,db)
-            create_table_artifact(table=records_to_insert,key='inserted-records')
-            logger.info(f'records inserted successfully on {model.__tablename__}')
-        
-        else:
-            logger.info(f'No records to insert on table {model.__tablename__}')
+            logger.info(f'{len(modified_records)} registros modificados encontrados para actualizar en la tabla {table_name}')
+            model.update_records(modified_records, db)
+            logger.info('operacion de actualizacion finalizada correctamente')
+            create_table_artifact(modified_records,'registros-actualizados')
 
-        if records_to_update:
+        db.commit()
 
-            logger.info(f'{len(records_to_update)} records to update found on entity {model_name}')
-            update_records(records_to_update,model,db)
-            create_table_artifact(table=records_to_update,key='updated-records')
-            logger.info(f'records updated successfully on {model.__tablename__}')
-        
-        else:
-            logger.info(f'No records to update on table {model.__tablename__}')
-
-        if debug:
-            db.rollback()
-        else:
-            db.commit()    
     except Exception as e:
         db.rollback()
-        raise SyncTableError(f'Unable to sync the table {model.__tablename__}.\n Changes on the database are not applied. \n Error : {e}')
+        raise SyncTableError(f'No se pudo actualizar la tabla {table_name} debido al siguiente error : {e}')
+    
 
 @flow(name='sincronizar_datos_bc_sql')
-def main(config_block : Optional[str] = None, tables : Optional[List[ModelsEnum]] = None):
+def main(config_block : Optional[str] = None, tables_filter : Optional[List[TablesEnum]] = None):
 
-    logger = get_run_logger() 
+    logger = get_run_logger()
 
     if config_block:
         config = Config.load_from_block(config_block)
-
     else:
         config = Config.load_from_env()
-        
+
+    if tables_filter:
+        logger.info(f'Ejecutando flujo de sincronizacion para las siguientes tablas : \n{tables_filter}')
+
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         sql_session = sessionmaker(engine)
-
         api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
                                               config.api.group,config.api.version,config.api.company_id,
                                               config.api.client_id,config.api.client_secret)
-        
-        sql_tables = get_models(tables)
+   
+        sql_tables = get_all_models(tables_filter)
         for model in sql_tables:
             with sql_session() as db:
                 sync_table.submit(model,api_client,db).wait()
 
     except (SQLEngineError, TokenRequestError, ModelRetrievalError):
-        logger.critical(f'The workflow cannot be processed due to a critical error.')
+        logger.critical('No se puede ejecutar el flujo debido a un error critico.')
         raise 
-
 
 
 if __name__ == '__main__':
