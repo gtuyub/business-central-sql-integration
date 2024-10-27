@@ -23,7 +23,7 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
     table_name = model.__tablename__
     fields = model.__mapper__.c.keys()
 
-    logger.info(f'Iniciando proceso de sincronización.\n tabla : {table_name}')
+    logger.info(f'Iniciando proceso de sincronizacion.\n tabla : {table_name}')
 
     new_records = api_client.get_with_params(entity=model_name,last_created_at=timestamps['last_created'],select=fields)
     modified_records = api_client.get_with_params(entity=model_name,last_modified_at=timestamps['last_modified'],select=fields)
@@ -60,9 +60,6 @@ def main(config_block : Optional[str] = None, tables_filter : Optional[List[Tabl
         config = Config.load_from_block(config_block)
     else:
         config = Config.load_from_env()
-
-    if tables_filter:
-        logger.info(f'Ejecutando flujo de sincronizacion para las siguientes tablas : \n{tables_filter}')
 
     try:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
