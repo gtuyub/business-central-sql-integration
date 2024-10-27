@@ -1,24 +1,21 @@
 from .base import Base
-from .orm_model import ModelsEnum
+from .orm_model import TablesEnum
 from .exceptions import SQLEngineError,ModelRetrievalError, InsertOperationError, UpdateOperationError
 import sqlalchemy
 import importlib
-from sqlalchemy.orm import DeclarativeBase, Session
-from sqlalchemy.orm.exc import StaleDataError
 import inspect
 import logging
 from typing import List, Dict, Type, Optional
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def get_models(models_from_enum : Optional[List[ModelsEnum]] = None) -> List[Type[DeclarativeBase]]:
+def get_all_models(enum_filter : Optional[List[TablesEnum]] = None) -> List[Type[Base]]:
     
     models_module = importlib.import_module('.orm_model',package='models')
     try:
-        if models_from_enum:      
-            models = [getattr(models_module,t.name) for t in models_from_enum]      
+        if enum_filter:      
+            models = [getattr(models_module,t.name) for t in enum_filter]      
         else:
             models = [
                 cls for _,cls in inspect.getmembers(models_module,inspect.isclass) 
@@ -43,62 +40,13 @@ def create_db_engine(server : str, database : str, username : str, password : st
     except Exception as e:
         raise SQLEngineError(f'Cannot create database engine with context:\n server : {server} \n database : {database}\n Error : {e}')
         
-def remove_duplicate_objects(model : Type[DeclarativeBase], main_list : List[Dict[str,str]], filter_list : List[Dict[str,str]]) -> List[Dict[str,str]]:
+def filter_duplicates_by_pk(model : Type[Base], modified_records : List[Dict[str,str]], new_records : List[Dict[str,str]]) -> List[Dict[str,str]]:
     
-    if main_list and filter_list:
+    if modified_records and new_records:
 
         p_keys = [k for k in model.__mapper__.c.keys() if getattr(model,k).primary_key]
-        filter_list_index = {tuple(row[k] for k in p_keys) for row in filter_list}
-        main_list = [row for row in main_list 
-                if tuple(row[k] for k in p_keys) not in filter_list_index]
+        new_records_pks = {tuple(row[k] for k in p_keys) for row in new_records}
+        modified_records = [row for row in modified_records 
+                if tuple(row[k] for k in p_keys) not in new_records_pks]
     
-    return main_list
-
-def insert_records(records : List[Dict[str,str]], model : Type[DeclarativeBase] , db: Session) -> None:
-
-    if records:
-        #removing @odata.etag key included on every response of the API
-        for item in records:
-            item.pop('@odata.etag',None)
-        
-        try:
-            logger.info('attempting bulk insert operation...')
-            db.bulk_insert_mappings(model,records)
-            logger.info(f'all records inserted successfully on table {model.__tablename__}.')
-
-        except Exception as e:
-            db.rollback()
-            raise InsertOperationError(f'Could not insert records into table {model.__tablename__}: {e}')
-
-def update_records(records : List[Dict[str,str]], model : Type[DeclarativeBase] , db: Session) -> None:
-    
-    if records:
-        #removing @odata.etag key included on every response of the API
-        for item in records:
-            item.pop('@odata.etag',None)
-        
-        try:
-            logger.info('attempting bulk update operation...')
-            db.bulk_update_mappings(model,records)
-            logger.info(f'all records updated successfully on table {model.__tablename__}.')
-        
-        except StaleDataError as e:
-            db.rollback()
-            raise StaleDataError(f'Could not update table {model.__tablename__}, this could be due to a primary key value being modified on the table : {e}')
-
-        except Exception as e:
-            db.rollback()
-            raise UpdateOperationError(f'Could not update records from table {model.__tablename__}: {e}')
-
-        
-def get_latest_created_timestamp(model : Type[DeclarativeBase], db: Session) -> datetime:
-
-    timestamp = db.query(sqlalchemy.func.max(model.systemCreatedAt)).scalar()
-
-    return timestamp
-
-def get_latest_modified_timestamp(model : Type[DeclarativeBase], db: Session) -> datetime:
-
-    timestamp = db.query(sqlalchemy.func.max(model.systemModifiedAt)).scalar()
-
-    return timestamp
+    return modified_records

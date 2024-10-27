@@ -4,8 +4,7 @@ from sqlalchemy import Column
 from enum import Enum
 
 class CustomString(types.TypeDecorator):
-    """clase string personalizada para mapear 'empty strings' a None, que a su vez SQLAlchemy 
-    mapea a NULL al interactuar con la base de datos."""
+    """clase string personalizada para mapear 'empty strings' a None, que a su vez SQLAlchemy mapea a NUL."""
 
     impl = types.String
     cache_ok = True
@@ -32,9 +31,6 @@ class currencies(Base):
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class exchangeRates(Base):
     __tablename__ = 'ExchangeRate'
@@ -43,35 +39,24 @@ class exchangeRates(Base):
     currencyCode = Column('currency_code',CustomString,primary_key=True)
     relationalCurrencyCode = Column('relational_currency_code',CustomString,primary_key=True)
     exchangeRateAmount = Column('amount',types.Float)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class paymentTerms(Base):
     __tablename__ = 'PaymentTerms'
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class countries(Base):
     __tablename__ = 'Country'
 
     code = Column('code',types.String,primary_key=True)
     name = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class shipmentMethods(Base):
     __tablename__ = 'ShipmentMethod'
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class priceGroups(Base):
@@ -79,17 +64,12 @@ class priceGroups(Base):
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class locations(Base):
     __tablename__ = 'Location'
 
     code = Column('code',types.String,primary_key=True)
     name = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class paymentMethods(Base):
@@ -97,8 +77,6 @@ class paymentMethods(Base):
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class itemCategories(Base):
@@ -108,8 +86,6 @@ class itemCategories(Base):
     description = Column('name',CustomString)
     hasChildren = Column('has_children',types.Boolean)
     parentCategory = Column('parent_category',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class customerPostingGroups(Base):
@@ -117,8 +93,6 @@ class customerPostingGroups(Base):
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class vendorPostingGroups(Base):
@@ -126,8 +100,6 @@ class vendorPostingGroups(Base):
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class inventoryPostingGroups(Base):
@@ -135,8 +107,6 @@ class inventoryPostingGroups(Base):
 
     code = Column('code',types.String,primary_key=True)
     description = Column('name',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class customers(Base):
@@ -153,8 +123,6 @@ class customers(Base):
     salespersonCode = Column('salesperson_code',CustomString)
     rfcNo = Column('rfc_code',CustomString)
     blocked = Column('blocked',CustomString)
-    systemCreatedAt = Column('created_at', types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class vendors(Base):
@@ -170,8 +138,6 @@ class vendors(Base):
     purchaserCode = Column('purchaser_code',CustomString)
     rfcNo = Column('rfc_code',CustomString)
     blocked = Column('blocked',CustomString)
-    systemCreatedAt = Column('created_at', types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class salesmen(Base):
@@ -180,8 +146,6 @@ class salesmen(Base):
     code = Column('code',types.String,primary_key=True)
     name = Column('name',CustomString)
     blocked = Column('blocked',types.Boolean)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class items(Base):
@@ -200,9 +164,6 @@ class items(Base):
     blocked = Column('blocked',types.Boolean)
     salesBlocked = Column('sales_blocked',types.Boolean)
     purchasingBlocked = Column('purchase_blocked',types.Boolean)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class customerLedgerEntries(Base):
     __tablename__ = 'CustomerLedger'
@@ -225,9 +186,6 @@ class customerLedgerEntries(Base):
     reversed = Column('is_reversed',types.Boolean)
     reversedByEntryNo = Column('reversed_by_entry',types.Integer)
     reversedEntryNo = Column('reversed_entry',types.Integer)    
-    systemCreatedAt = Column('created_at',types.DateTime) 
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 
 class vendorLedgerEntries(Base):
@@ -251,9 +209,6 @@ class vendorLedgerEntries(Base):
     reversed = Column('is_reversed',types.Boolean)
     reversedByEntryNo = Column('reversed_by_entry')
     reversedEntryNo = Column('reversed_entry')    
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 
 class salesInvoices(Base):
@@ -273,8 +228,6 @@ class salesInvoices(Base):
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
     orderNo = Column('order_no',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class salesInvoiceLines(Base):
@@ -290,8 +243,6 @@ class salesInvoiceLines(Base):
     lineDiscountAmount = Column('discount_amount',types.Float)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class salesCreditMemos(Base):
@@ -311,8 +262,6 @@ class salesCreditMemos(Base):
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
     returnOrderNo = Column('return_order_no',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
     
 class salesCreditMemoLines(Base):
@@ -328,8 +277,6 @@ class salesCreditMemoLines(Base):
     lineDiscountAmount = Column('discount_amount',types.Float)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
 class purchaseInvoices(Base):
@@ -346,9 +293,6 @@ class purchaseInvoices(Base):
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
     orderNo = Column('order_no',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
 
 class purchaseCreditMemos(Base):
     __tablename__ = 'PurchaseCrMemo'
@@ -364,10 +308,6 @@ class purchaseCreditMemos(Base):
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
     returnOrderNo = Column('return_order_no',CustomString)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
-
 
 class purchaseInvoiceLines(Base):
     __tablename__ = 'PurchaseInvoiceLine'
@@ -382,10 +322,6 @@ class purchaseInvoiceLines(Base):
     lineDiscountAmount = Column('discount_amount',types.Float)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
-
-
 
 class purchaseCreditMemoLines(Base):
     __tablename__ = 'PurchaseCrMemoLine'
@@ -400,38 +336,36 @@ class purchaseCreditMemoLines(Base):
     lineDiscountAmount = Column('discount_amount',types.Float)
     amount = Column('amount',types.Float)
     amountIncludingVAT = Column('amount_with_vat',types.Float)
-    systemCreatedAt = Column('created_at',types.DateTime)
-    systemModifiedAt = Column('modified_at',types.DateTime)
 
 
-class ModelsEnum(str,Enum) :
+class TablesEnum(str,Enum) :
     """subclase de Enum que define una descripción para cada modelo SQLALchemy.
     Cuando se ejecuta un 'flow' o 'deployment' en modo personalizado en el servidor de Prefect, 
-    te permite escoger con un 'dropdown' que tablas actualizar, en base a las descripciones en este Enum."""
+    te permite escoger con un 'dropdown' que tablas actualizar, en base a los valores en este Enum."""
 
     currencies = 'Divisas'
-    paymentTerms = 'Terminos de Pago'
+    paymentTerms = 'TerminosPago'
     countries = 'Paises'
-    shipmentMethods = 'Metodos de Entrega'
-    priceGroups = 'Grupos de Precios Cliente'
+    shipmentMethods = 'MetodosEntrega'
+    priceGroups = 'GruposPreciosCliente'
     locations = 'Almacenes'
-    paymentMethods = 'Metodos de Pago'
-    itemCategories = 'Categorias de Producto'
-    customerPostingGroups = 'Grupos de Cliente'
-    inventoryPostingGroups = 'Grupos de Inventario'
-    vendorPostingGroups = 'Grupos de Proveedor'
-    exchangeRates = 'Tipos de Cambio'
+    paymentMethods = 'MetodosPago'
+    itemCategories = 'CategoriasProducto'
+    customerPostingGroups = 'GruposCliente'
+    inventoryPostingGroups = 'GruposInventario'
+    vendorPostingGroups = 'GruposProveedor'
+    exchangeRates = 'TiposCambio'
     salesmen = 'Vendedores'
     items = 'Productos'
     customers = 'Clientes'
     vendors = 'Proveedores'
-    customerLedgerEntries = 'Movimientos Clientes'
-    vendorLedgerEntries = 'Movimientos Proveedores'
-    salesInvoices = 'Facturas Venta'
-    salesInvoiceLines = 'Lineas Facturas Venta'
-    salesCreditMemos = 'Notas de Credito Venta'
-    salesCreditMemoLines = 'Lineas Notas de Credito Venta'
-    purchaseInvoices = 'Facturas Compra'
-    purchaseInvoiceLines = 'Lineas Facturas Compra'
-    purchaseCreditMemos = 'Notas de Credito Compra'
-    purchaseCreditMemoLines = 'Lineas Notas de Credito Compra'
+    customerLedgerEntries = 'MovimientosClientes'
+    vendorLedgerEntries = 'MovimientosProveedores'
+    salesInvoices = 'FacturasVenta'
+    salesInvoiceLines = 'LineasFacturasVenta'
+    salesCreditMemos = 'NotasCreditoVenta'
+    salesCreditMemoLines = 'LineasNotasCreditoVenta'
+    purchaseInvoices = 'FacturasCompra'
+    purchaseInvoiceLines = 'LineasFacturasCompra'
+    purchaseCreditMemos = 'NotasCreditoCompra'
+    purchaseCreditMemoLines = 'LineasNotasCreditoCompra'
