@@ -25,7 +25,7 @@ def get_models(models_from_enum : Optional[List[ModelsEnum]] = None) -> List[Typ
                 if issubclass(cls,Base) and cls is not Base
                 ]
     except Exception as e:
-        raise ModelRetrievalError(f'Cannot retrieve the ORM models from orm module due to following error : {e}')   
+        raise ModelRetrievalError(f'Cannot retrieve the SQLAlchemy models from {models_module} due to following error : {e}')   
     
     logger.info(f'Tables retrieved :\n {[model.__tablename__ for model in models]}')
     
