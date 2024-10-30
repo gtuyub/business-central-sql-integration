@@ -34,22 +34,19 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
     modified_records = filter_duplicates_by_pk(model,modified_records,new_records)
 
     try:
+        #si la api devuelve registros nuevos o modificados, insertar/actualizar
         if new_records or modified_records:
 
             if new_records:
-                #si la api devuelve registros nuevos, insertar en el modelo:
                 logger.info(f'{len(new_records)} registros nuevos encontrados para insertar en la tabla {table_name}')
                 model.insert_records(new_records, db)
                 logger.info('operacion de insercion finalizada correctamente.')
-                #crea una tabla en el UI de prefect que muestra los registros que se insertaron:
                 create_table_artifact(new_records, 'registros-nuevos')
 
             if modified_records:
-                #si la api devuelve registors modificados, actualizar en el modelo:
                 logger.info(f'{len(modified_records)} registros modificados encontrados para actualizar en la tabla {table_name}')
                 model.update_records(modified_records, db)
                 logger.info('operacion de actualizacion finalizada correctamente')
-                #crea una tabla en el UI de prefect que muestra los registros que se actualizaron:
                 create_table_artifact(modified_records,'registros-actualizados')
                 
             db.commit()
@@ -58,14 +55,13 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
             logger.info(f'No se encontraron registros para actualizar o modificar en la tabla {table_name}.')
 
     except Exception as e:
-        #para cualquier exception revierte los cambios en la base de datos
         db.rollback()
         raise SyncTableError(f'No se pudo actualizar la tabla {table_name} debido al siguiente error : {e}')
     
 
 @flow(name='sincronizar_datos_bc_sql')
 def main(config_block : Optional[str] = None, tables_filter : Optional[List[TablesEnum]] = None):
-    """Esta es la función principal, aplica la función sync_table a cada una de los modelos sqlalchemy."""
+    """Esta es la función principal, aplica la función sync_table a cada una de las tablas SQL."""
 
     logger = get_run_logger()
 
@@ -73,21 +69,17 @@ def main(config_block : Optional[str] = None, tables_filter : Optional[List[Tabl
         #cargar configuracion de un <prefect block> en produccion, de <environment variables> en local.
         config = Config.load_from_block(config_block) if config_block else Config.load_from_env()
 
-        #crear engine sqlalchemy e inicializar session factory.
+        #inicializando engine, session factory y cliente de API:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         Session = sessionmaker(engine)
-
-        #inicializar cliente de API de Business Central.
         api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
                                             config.api.group,config.api.version,config.api.company_id,
                                             config.api.client_id,config.api.client_secret)       
 
-    #detener el flujo y lanzar error crítico si alguno de estos recursos no se inicializa correctamente. 
     except Exception as e:
         logger.critical(f'No se puede ejecutar el flujo debido a un error critico.\n {e}')
         raise 
         
-    #obtener todos los modelos sqlalchemy del modulo models.orm_models
     sql_models = get_all_models(tables_filter)
     
     #para cada uno de los modelos, aplicar la rutina de sincronizacion:
