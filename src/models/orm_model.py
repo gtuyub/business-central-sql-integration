@@ -36,8 +36,8 @@ class exchangeRates(Base):
     __tablename__ = 'ExchangeRate'
 
     startingDate = Column('starting_date',types.Date,primary_key=True)
-    currencyCode = Column('currency_code',CustomString,primary_key=True)
-    relationalCurrencyCode = Column('relational_currency_code',CustomString,primary_key=True)
+    currencyCode = Column('currency_code',types.String,primary_key=True)
+    relationalCurrencyCode = Column('relational_currency_code',types.String,primary_key=True)
     exchangeRateAmount = Column('amount',types.Float)
 
 class paymentTerms(Base):
