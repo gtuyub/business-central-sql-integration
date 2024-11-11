@@ -7,7 +7,7 @@ from prefect import task, flow
 from prefect.artifacts import create_table_artifact
 from prefect.logging import get_run_logger
 from business_central_api.client import BusinessCentralAPIClient
-from models.tasks import get_all_models, create_db_engine, filter_duplicates_by_pk
+from models.tasks import get_all_models, create_db_engine, filter_duplicates_by_index
 from models.exceptions import SyncTableError
 
 
@@ -31,7 +31,7 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
     new_records = api_client.get_with_params(entity=model_name,last_created_at=timestamps['last_created'],select=fields)
     modified_records = api_client.get_with_params(entity=model_name,last_modified_at=timestamps['last_modified'],select=fields)
     #quitar los registros nuevos de la lista de registros modificados:
-    modified_records = filter_duplicates_by_pk(model,modified_records,new_records)
+    modified_records = filter_duplicates_by_index(model,modified_records,new_records)
 
     try:
         #si la api devuelve registros nuevos o modificados, insertar/actualizar
@@ -80,12 +80,12 @@ def main(config_block : Optional[str] = None, tables_filter : Optional[List[Tabl
         logger.critical(f'No se puede ejecutar el flujo debido a un error critico.\n {e}')
         raise 
         
-    sql_models = get_all_models(tables_filter)
+    models = get_all_models(tables_filter)
     
-    #para cada uno de los modelos, aplicar la rutina de sincronizacion:
-    for model in sql_models:
+    #para cada una de las tablas, aplicar la rutina de sincronizacion:
+    for tbl in models:
         with Session() as db:
-            sync_table.submit(model,api_client,db).wait()
+            sync_table.submit(tbl,api_client,db).wait()
 
 
 if __name__ == '__main__':

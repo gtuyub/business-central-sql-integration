@@ -40,7 +40,7 @@ def create_db_engine(server : str, database : str, username : str, password : st
     except Exception as e:
         raise SQLEngineError(f'Cannot create database engine with context:\n server : {server} \n database : {database}\n Error : {e}')
         
-def filter_duplicates_by_pk(model : Type[Base], modified_records : List[Dict[str,str]], new_records : List[Dict[str,str]]) -> List[Dict[str,str]]:
+def filter_duplicates_by_index(model : Type[Base], modified_records : List[Dict[str,str]], new_records : List[Dict[str,str]]) -> List[Dict[str,str]]:
     
     if modified_records and new_records:
 

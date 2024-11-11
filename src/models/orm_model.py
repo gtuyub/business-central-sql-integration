@@ -4,7 +4,7 @@ from sqlalchemy import Column
 from enum import Enum
 
 class CustomString(types.TypeDecorator):
-    """clase string personalizada para mapear 'empty strings' a None, que a su vez SQLAlchemy mapea a NUL."""
+    """clase string personalizada para mapear 'empty strings' a NULL."""
 
     impl = types.String
     cache_ok = True
