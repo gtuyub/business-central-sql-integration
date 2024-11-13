@@ -5,6 +5,7 @@ import urllib.parse
 from typing import List
 from .exceptions import BusinessCentralClientRequestError, TokenRequestError
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -34,7 +35,7 @@ class BusinessCentralAPIClient(requests.Session):
         self.headers.update(
             {   'Authorization': f'{self.token_type} {self.access_token}',
                 'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'}
+                'Content-Type': 'application/json'}
             ) 
         
     def log_client_details(self):
@@ -154,3 +155,17 @@ class BusinessCentralAPIClient(requests.Session):
             logger.warning(f'No items in response for entity {entity}')
 
         return result
+    
+    def post_usd_exchange_rate(self, starting_date : str, rate_amount : float):
+
+        request_body = {
+            
+            'currencyCode' : 'USD',
+            'relationalCurrencyCode' : '',
+            'exchangeRateAmount' : rate_amount,
+            'startingDate' : starting_date
+        }
+
+        response =super().request(url = urllib.parse.urljoin(self.base_url,'exchangeRates') ,method='POST', json=request_body)
+
+        return response
