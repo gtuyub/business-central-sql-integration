@@ -1,7 +1,9 @@
 from config.settings import Config
+from config.logging_config import setup_logging
+import logging
 from sqlalchemy.orm import sessionmaker, Session
-from typing import Optional, List, Type
-from models.orm_model import TablesEnum
+from typing import Optional, List, Type, Union
+from models.orm_model import Tables
 from models.base import Base
 from prefect import task, flow
 from prefect.artifacts import create_table_artifact
@@ -11,30 +13,30 @@ from models.tasks import get_all_models, create_db_engine, filter_duplicates_by_
 from models.exceptions import SyncTableError
 
 
-@task(task_run_name = 'sincronizar-tabla-{model.__tablename__}')
+@task(task_run_name = 'sincronizar-tabla-{model.__tablename__}',log_prints=True)
 def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Session):
-    """Sincroniza la tabla SQL con el endpoint correspondiente en la API de Business Central.
-    Esta funcion obtiene los registros nuevos y modificados de la API y los inserta/actualiza en el modelo correspondiente.
-   """
+    """This function updates the model performing bulk insert and bulk update with new and modified records from the corresponding API endpoint."""
+    
     logger = get_run_logger()
  
     model_name = model.__name__
     table_name = model.__tablename__
     fields = model.__mapper__.c.keys()
+    fields.remove('id')
 
-    #obtener ultima fecha de actualizacion y ultima fecha de creacion de la tabla.
+    #get last created and last modified timestamps from the model:
     timestamps = model.get_sync_timestamps(db)
 
     logger.info(f'Iniciando proceso de sincronizacion.\n tabla : {table_name}')
 
-    #obtener registros creados despues de la ultima fecha de creacion, y registros modificados despues de la ultima fecha de modificacion.
+    #get records created after last created timestamp, and records modified after last modified timestamp:
     new_records = api_client.get_with_params(entity=model_name,last_created_at=timestamps['last_created'],select=fields)
     modified_records = api_client.get_with_params(entity=model_name,last_modified_at=timestamps['last_modified'],select=fields)
-    #quitar los registros nuevos de la lista de registros modificados:
+    #remove new records from list of modified records:
     modified_records = filter_duplicates_by_index(model,modified_records,new_records)
 
     try:
-        #si la api devuelve registros nuevos o modificados, insertar/actualizar
+        #if the api response returns records, attempt to insert and update:
         if new_records or modified_records:
 
             if new_records:
@@ -59,17 +61,17 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
         raise SyncTableError(f'No se pudo actualizar la tabla {table_name} debido al siguiente error : {e}')
     
 
-@flow(name='sincronizar_datos_bc_sql')
-def main(config_block : Optional[str] = None, tables_filter : Optional[List[TablesEnum]] = None):
-    """Esta es la función principal, aplica la función sync_table a cada una de las tablas SQL."""
+@flow(name='sincronizar_datos_bc_sql',log_prints=True)
+def main(config_block : Optional[str] = None, table_filter : Optional[Union[Tables,List[Tables]]] = None):
+    """This is the main function, it performs the sync_table function to each sqlalchemy model."""
 
     logger = get_run_logger()
 
     try:
-        #cargar configuracion de un <prefect block> en produccion, de <environment variables> en local.
+        #load config from a prefect block on prod or from env variables on local:
         config = Config.load_from_block(config_block) if config_block else Config.load_from_env()
 
-        #inicializando engine, session factory y cliente de API:
+        #initialize Engine, Session factory and API client:
         engine = create_db_engine(config.db.server,config.db.database,config.db.username,config.db.password)
         Session = sessionmaker(engine)
         api_client = BusinessCentralAPIClient(config.api.tenant_id,config.api.environment,config.api.publisher,
@@ -80,13 +82,16 @@ def main(config_block : Optional[str] = None, tables_filter : Optional[List[Tabl
         logger.critical(f'No se puede ejecutar el flujo debido a un error critico.\n {e}')
         raise 
         
-    models = get_all_models(tables_filter)
+    models = get_all_models(table_filter)
     
-    #para cada una de las tablas, aplicar la rutina de sincronizacion:
+    #for each table, apply sync_table function:
     for tbl in models:
         with Session() as db:
             sync_table.submit(tbl,api_client,db).wait()
 
 
 if __name__ == '__main__':
+
+    setup_logging(logging.INFO)
     main()
+    
