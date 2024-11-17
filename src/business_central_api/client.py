@@ -121,7 +121,7 @@ class BusinessCentralAPIClient(requests.Session):
     
     def create_parameters(self,last_created_at : datetime = None, last_modified_at : datetime = None, order_by : str = None, select : List[str] = None, offset : int =None, limit : int = None, custom_filter : str = None):
         """Dinamically generate parameters dictionary for the request, using odata standard parameters: $filter, $orderBy, $select, $offset and $limit"""
-        params = {}
+        params = {'$schemaversion':'1.0'}
 
         if last_created_at:
             formatted_datetime = last_created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')+'Z'
