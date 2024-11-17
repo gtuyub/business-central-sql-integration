@@ -27,7 +27,7 @@ deployments:
 - name: actualizar-db-business-central-mexico
   version: null
   tags: []
-  description: Este 'deployment' sincroniza las tablas SQL de la base BC_PROD con datos del entorno de Mexico de Business central.
+  description: Sincroniza las tablas SQL con los datos del entorno de Mexico de Business Central.
   schedule: {}
   flow_name:
   entrypoint: src/main.py:main
