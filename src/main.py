@@ -61,7 +61,7 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
         raise SyncTableError(f'No se pudo actualizar la tabla {table_name} debido al siguiente error : {e}')
     
 
-@flow(name='sincronizar_datos_bc_sql',log_prints=True)
+@flow(name='sincronizar_datos_bc',log_prints=True)
 def main(config_block : Optional[str] = None, table_filter : Optional[Union[Tables,List[Tables]]] = None):
     """This is the main function, it performs the sync_table function to each sqlalchemy model."""
 
