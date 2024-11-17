@@ -1,21 +1,25 @@
 from .base import Base
-from .orm_model import TablesEnum
-from .exceptions import SQLEngineError,ModelRetrievalError, InsertOperationError, UpdateOperationError
+from .orm_model import Tables
+from .exceptions import SQLEngineError,ModelRetrievalError
 import sqlalchemy
 import importlib
 import inspect
 import logging
-from typing import List, Dict, Type, Optional
+from typing import List, Dict, Type, Optional, Union
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def get_all_models(enum_filter : Optional[List[TablesEnum]] = None) -> List[Type[Base]]:
+def get_all_models(table_filter : Optional[Union[Tables,List[Tables]]] = None) -> List[Type[Base]]:
     
     models_module = importlib.import_module('.orm_model',package='models')
     try:
-        if enum_filter:      
-            models = [getattr(models_module,t.name) for t in enum_filter]      
+        if table_filter: 
+            if isinstance(table_filter,list):     
+                models = [getattr(models_module,t.name) for t in table_filter]
+            if isinstance(table_filter,Tables):
+                models = [getattr(models_module,table_filter.name)]
+
         else:
             models = [
                 cls for _,cls in inspect.getmembers(models_module,inspect.isclass) 
@@ -44,9 +48,10 @@ def filter_duplicates_by_index(model : Type[Base], modified_records : List[Dict[
     
     if modified_records and new_records:
 
-        p_keys = [k for k in model.__mapper__.c.keys() if getattr(model,k).primary_key]
-        new_records_pks = {tuple(row[k] for k in p_keys) for row in new_records}
+        update_keys = model.get_update_keys()
+        
+        new_records_pks = {tuple(row[str(k)] for k in update_keys) for row in new_records}
         modified_records = [row for row in modified_records 
-                if tuple(row[k] for k in p_keys) not in new_records_pks]
+                if tuple(row[str(k)] for k in update_keys) not in new_records_pks]
     
     return modified_records
