@@ -3,7 +3,7 @@ from typing import Optional
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from config.config_block import IntegracionBusinessCentral
+from .config_block import IntegracionBusinessCentral
 
 @dataclass
 class APIConfig:
@@ -82,7 +82,7 @@ class Config:
             publisher = block.publisher,
             group = block.group,
             version = block.version,
-            client_id = block.client_id,
+            client_id = block.client_id.get_secret_value(),
             client_secret = block.client_secret.get_secret_value()
 
         )

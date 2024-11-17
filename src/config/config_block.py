@@ -10,7 +10,7 @@ class IntegracionBusinessCentral(Block):
     publisher : str
     group : str
     version : str
-    client_id : str
+    client_id : Optional[SecretStr]
     client_secret : Optional[SecretStr]
     username : Optional[SecretStr]
     password : Optional[SecretStr]
