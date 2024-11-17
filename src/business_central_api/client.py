@@ -5,13 +5,15 @@ import urllib.parse
 from typing import List
 from .exceptions import BusinessCentralClientRequestError, TokenRequestError
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 class BusinessCentralAPIClient(requests.Session):
+    """A client for interacting with Business Central API."""
+    
     def __init__(self,tenant_id,environment,api_publisher,api_group,api_version,company_id,client_id,client_secret):
+        """Initializes the api client with oauth 2.0 bearer token authentication."""
 
         super().__init__()
 
@@ -33,9 +35,11 @@ class BusinessCentralAPIClient(requests.Session):
 
 
         self.headers.update(
+            
             {   'Authorization': f'{self.token_type} {self.access_token}',
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'}
+                'Content-Type': 'application/json'
+                }
             ) 
         
     def log_client_details(self):
@@ -45,6 +49,7 @@ class BusinessCentralAPIClient(requests.Session):
 
         
     def get_oauth_token(self):
+        """Acquires bearer token by making a post request to the login endpoint for given client instance."""
 
         logger.info(f'Attempting to request access token at : {self.authority}')
         auth_client = ConfidentialClientApplication(client_id = self.client_id, client_credential = self.client_secret, authority = self.authority)
@@ -66,11 +71,13 @@ class BusinessCentralAPIClient(requests.Session):
             raise TokenRequestError(f'Unable to retrieve access token : {error_description}')
         
     def refresh_oauth_token(self):
+        """Refresh the bearer token if expired"""
 
         self.get_oauth_token()
 
 
     def request(self, method : str, url : str, **kwargs):
+        """Custom request method that handles refreshing the token if response is 401 Unauthorized."""
 
         endpoint = urllib.parse.urljoin(self.base_url,url)
         parameters = kwargs.get('params')
@@ -83,6 +90,7 @@ class BusinessCentralAPIClient(requests.Session):
             logger.warning('401 Unauthorized request, refreshing oauth token')
             self.refresh_oauth_token()
             response = super().request(url=endpoint,method=method,**kwargs)
+            
 
         try:
             response.raise_for_status()
@@ -90,11 +98,13 @@ class BusinessCentralAPIClient(requests.Session):
         except requests.HTTPError as e:
             logger.error(f'http error :\n {e}')
             raise BusinessCentralClientRequestError(f'Unable to process the request to business central API : {e}')
+            
 
         return response
     
     
     def paginated_get_request(self, url : str, params : dict = None):
+        """Paginated GET request using @odata.next link parameter, which is available on paginated responses of the API."""
 
         response = self.request(url=url,method='GET',headers=self.headers,params=params)
 
@@ -110,6 +120,7 @@ class BusinessCentralAPIClient(requests.Session):
         return result.get('value')
     
     def create_parameters(self,last_created_at : datetime = None, last_modified_at : datetime = None, order_by : str = None, select : List[str] = None, offset : int =None, limit : int = None, custom_filter : str = None):
+        """Dinamically generate parameters dictionary for the request, using odata standard parameters: $filter, $orderBy, $select, $offset and $limit"""
         params = {}
 
         if last_created_at:
@@ -144,6 +155,7 @@ class BusinessCentralAPIClient(requests.Session):
         return params
 
     def get_with_params(self, entity : str, last_created_at : datetime = None, last_modified_at : datetime = None, order_by : str = None, select : List[str] = None, offset : int = None, limit : int = None, custom_filter : str = None):
+        """Get records from a specific API page entity, using custom odata parameters."""
 
         params = self.create_parameters(last_created_at,last_modified_at,order_by,select,offset,limit,custom_filter)
         result = self.paginated_get_request(url=entity,params=params)
