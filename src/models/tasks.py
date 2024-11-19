@@ -1,5 +1,5 @@
 from .base import Base
-from .orm_model import Tables
+from .db_model import Tables
 from .exceptions import SQLEngineError,ModelRetrievalError
 import sqlalchemy
 import importlib
@@ -10,16 +10,12 @@ from typing import List, Dict, Type, Optional, Union
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def get_all_models(table_filter : Optional[Union[Tables,List[Tables]]] = None) -> List[Type[Base]]:
+def get_models_to_sync(table_filter : Optional[Union[Tables,List[Tables]]] = None) -> List[Type[Base]]:
     
-    models_module = importlib.import_module('.orm_model',package='models')
+    models_module = importlib.import_module('.db_model',package='models')
     try:
         if table_filter: 
-            if isinstance(table_filter,list):     
                 models = [getattr(models_module,t.name) for t in table_filter]
-            if isinstance(table_filter,Tables):
-                models = [getattr(models_module,table_filter.name)]
-
         else:
             models = [
                 cls for _,cls in inspect.getmembers(models_module,inspect.isclass) 
@@ -28,7 +24,7 @@ def get_all_models(table_filter : Optional[Union[Tables,List[Tables]]] = None) -
     except Exception as e:
         raise ModelRetrievalError(f'Cannot retrieve the SQLAlchemy models from {models_module} due to following error : {e}')   
     
-    logger.info(f'Tables retrieved :\n {[model.__tablename__ for model in models]}')
+    logger.info(f'Tables to sync:\n {[model.__tablename__ for model in models]}')
     
     return models
 
