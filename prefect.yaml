@@ -38,3 +38,17 @@ deployments:
     name: dev
     work_queue_name: null
     job_variables: {}
+- name: actualizar-db-business-central-guatemala
+  version: null
+  tags: []
+  description: Sincroniza las tablas SQL con los datos del entorno de Guatemala en Business Central.
+  schedule: {}
+  flow_name:
+  entrypoint: src/main.py:main
+  parameters: {
+    config_block :  'config-bc-guatemala'
+  } 
+  work_pool:
+    name: dev
+    work_queue_name: null
+    job_variables: {}
