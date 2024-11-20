@@ -89,5 +89,5 @@ def main(config_block : Optional[str] = None, table_filter : Optional[List[Table
 
 
 if __name__ == '__main__':
-    main()
+    main(table_filter=[Tables.items])
     

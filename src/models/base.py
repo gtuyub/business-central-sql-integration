@@ -1,5 +1,6 @@
-from sqlalchemy.orm import DeclarativeBaseNoMeta, Session
-from sqlalchemy import Column, DateTime, Integer, func, insert, update,  and_, or_,select
+from sqlalchemy.orm import DeclarativeBaseNoMeta, Session, Mapped, mapped_column
+from sqlalchemy.types import DateTime, Integer
+from sqlalchemy import func, insert, update,  and_, or_,select
 from datetime import datetime
 from typing import List, Dict
 from abc import ABC, abstractmethod
@@ -11,9 +12,9 @@ class Base(DeclarativeBaseNoMeta, ABC):
 
     __abstract__ = True
     
-    id = Column(Integer,primary_key=True,autoincrement=True,nullable=False)
-    systemCreatedAt = Column('created_at',DateTime)
-    systemModifiedAt = Column('modified_at',DateTime)
+    id : Mapped[int]= mapped_column(primary_key=True,autoincrement=True,nullable=False)
+    systemCreatedAt : Mapped[datetime] = mapped_column('created_at',DateTime)
+    systemModifiedAt : Mapped[datetime] = mapped_column('modified_at',DateTime)
 
     @classmethod
     def _get_last_created_timestamp(cls, db : Session) -> datetime:

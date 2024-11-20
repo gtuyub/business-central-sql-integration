@@ -1,8 +1,8 @@
 from .base import Base
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator, String, Integer, Float, Boolean, Date
 from datetime import date
-from typing import Optional
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import List, Optional
 from enum import Enum
 
 class CustomString(TypeDecorator):
@@ -97,8 +97,6 @@ class locations(Base):
     name : Mapped[Optional[str]] = mapped_column('location_name',CustomString[100])
     countryRegionCode : Mapped[Optional[str]] = mapped_column('country_code',CustomString[10])
 
-
-
     @classmethod
     def get_update_keys(cls):
         return ['code']
@@ -166,13 +164,13 @@ class customers(Base):
 
     no : Mapped[str] = mapped_column('customer_code',String[20],unique=True,nullable=False)
     name : Mapped[Optional[str]] = mapped_column('customer_name',CustomString[100])
-    contact : Mapped[Optional[str]] = mapped_column('contact_code',String[20])
-    customerPostingGroup : Mapped[Optional[str]] = mapped_column('customer_posting_group_code',String[20])
-    customerPriceGroup : Mapped[Optional[str]] = mapped_column('customer_price_group_code',String[20])
-    paymentTermsCode : Mapped[Optional[str]] = mapped_column('payment_terms_code',String[20])
-    countryRegionCode : Mapped[Optional[str]] = mapped_column('country_code',String[10])
-    locationCode : Mapped[Optional[str]] = mapped_column('location_code',String[20])
-    salespersonCode : Mapped[Optional[str]] = mapped_column('salesperson_code',String[20])
+    contact : Mapped[Optional[str]] = mapped_column('contact_code',CustomString[20])
+    customerPostingGroup : Mapped[Optional[str]] = mapped_column('customer_posting_group_code',CustomString[20])
+    customerPriceGroup : Mapped[Optional[str]] = mapped_column('customer_price_group_code',CustomString[20])
+    paymentTermsCode : Mapped[Optional[str]] = mapped_column('payment_terms_code',CustomString[20])
+    countryRegionCode : Mapped[Optional[str]] = mapped_column('country_code',CustomString[10])
+    locationCode : Mapped[Optional[str]] = mapped_column('location_code',CustomString[20])
+    salespersonCode : Mapped[Optional[str]] = mapped_column('salesperson_code',CustomString[20])
     rfcNo : Mapped[Optional[str]] = mapped_column('rfc_code',CustomString[13])
     blocked : Mapped[Optional[str]] = mapped_column('is_blocked',CustomString[100])
 
@@ -186,12 +184,12 @@ class vendors(Base):
 
     no : Mapped[str] = mapped_column('vendor_code',String[20],unique=True,nullable=False)
     name : Mapped[Optional[str]] = mapped_column('vendor_name',CustomString[100])
-    primaryContactNo : Mapped[Optional[str]] = mapped_column('contact_code',String[20])
-    vendorPostingGroup : Mapped[Optional[str]] = mapped_column('vendor_posting_group',String[20])
-    paymentTermsCode : Mapped[Optional[str]] = mapped_column('payment_terms_code',String[20])
-    countryRegionCode : Mapped[Optional[str]] = mapped_column('country_code',String[20])
-    locationCode : Mapped[Optional[str]] = mapped_column('location_code',String[20])
-    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',String[20])
+    primaryContactNo : Mapped[Optional[str]] = mapped_column('contact_code',CustomString[20])
+    vendorPostingGroup : Mapped[Optional[str]] = mapped_column('vendor_posting_group',CustomString[20])
+    paymentTermsCode : Mapped[Optional[str]] = mapped_column('payment_terms_code',CustomString[20])
+    countryRegionCode : Mapped[Optional[str]] = mapped_column('country_code',CustomString[20])
+    locationCode : Mapped[Optional[str]] = mapped_column('location_code',CustomString[20])
+    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',CustomString[20])
     rfcNo : Mapped[Optional[str]] = mapped_column('rfc_code',CustomString[13])
     blocked : Mapped[Optional[str]] = mapped_column('is_blocked',CustomString[100])
 
@@ -219,8 +217,8 @@ class items(Base):
     description : Mapped[Optional[str]] = mapped_column('item_name',CustomString[100])
     baseUnitOfMeasure : Mapped[Optional[str]] = mapped_column('measure_unit',CustomString[50])
     type : Mapped[Optional[str]] = mapped_column('item_type',CustomString[100])
-    inventoryPostingGroup : Mapped[Optional[str]] =  mapped_column('inventory_posting_group_code',String[20])
-    itemCategoryCode : Mapped[Optional[str]] = mapped_column('item_category_code',String[20])
+    inventoryPostingGroup : Mapped[Optional[str]] =  mapped_column('inventory_posting_group_code',CustomString[20])
+    itemCategoryCode : Mapped[Optional[str]] = mapped_column('item_category_code',CustomString[20])
     unitPrice : Mapped[Optional[float]] = mapped_column('unit_price',Float)
     unitCost : Mapped[Optional[float]] = mapped_column('unit_cost',Float)
     grossWeight : Mapped[Optional[float]] = mapped_column('gross_weight',Float)
@@ -240,8 +238,8 @@ class customerLedgerEntries(Base):
     postingDate : Mapped[date] = mapped_column('posting_date',Date)
     documentDate : Mapped[date] = mapped_column('document_date',Date)
     documentType : Mapped[Optional[str]] = mapped_column('document_type',CustomString[100])
-    documentNo : Mapped[str] = mapped_column('document_no',String[25])
-    customerNo : Mapped[str] = mapped_column('customer_code',String[20])
+    documentNo : Mapped[str] = mapped_column('document_no',String[25],nullable=False)
+    customerNo : Mapped[str] = mapped_column('customer_code',CustomString[20])
     currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
     amount : Mapped[float] = mapped_column('amount',Float)
     remainingAmount : Mapped[float] = mapped_column('remaining_amount',Float)
@@ -267,8 +265,8 @@ class vendorLedgerEntries(Base):
     postingDate : Mapped[date] = mapped_column('posting_date',Date)
     documentDate : Mapped[date] = mapped_column('document_date',Date)
     documentType : Mapped[date] = mapped_column('document_type',CustomString[100])
-    documentNo : Mapped[str] = mapped_column('document_no', String[25])
-    vendorNo : Mapped[str] = mapped_column('vendor_code',String[20])
+    documentNo : Mapped[str] = mapped_column('document_no', String[25],nullable=False)
+    vendorNo : Mapped[str] = mapped_column('vendor_code',CustomString[20])
     currencyCode : Mapped[str] = mapped_column('currency_code',String[10])
     amount : Mapped[float] = mapped_column('amount',Float)
     remainingAmount : Mapped[float] = mapped_column('remaining_amount',Float)
@@ -294,13 +292,13 @@ class salesInvoices(Base):
     custLedgerEntryNo : Mapped[int] = mapped_column('entry_id',Integer,nullable=False)
     postingDate : Mapped[date] = mapped_column('posting_date', Date)
     documentDate : Mapped[date] = mapped_column('document_date',Date)
-    sellToCustomerNo : Mapped[str] = mapped_column('customer_code',String[20])
-    shipToCode : Mapped[Optional[str]] = mapped_column('ship_to_code',String[10])
-    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',String[20])
-    shipmentMethodCode : Mapped[Optional[str]] = mapped_column('shipment_method_code',String[20])
-    locationCode : Mapped[Optional[str]] = mapped_column('location_code',String[20])
-    currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
-    salespersonCode : Mapped[Optional[str]]= mapped_column('salesperson_code',String[20])
+    sellToCustomerNo : Mapped[str] = mapped_column('customer_code',CustomString[20])
+    shipToCode : Mapped[Optional[str]] = mapped_column('ship_to_code',CustomString[10])
+    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',CustomString[20])
+    shipmentMethodCode : Mapped[Optional[str]] = mapped_column('shipment_method_code',CustomString[20])
+    locationCode : Mapped[Optional[str]] = mapped_column('location_code',CustomString[20])
+    currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',CustomString[10])
+    salespersonCode : Mapped[Optional[str]]= mapped_column('salesperson_code',CustomString[20])
     amount : Mapped[float]= mapped_column('amount',Float)
     amountIncludingVAT : Mapped[float] = mapped_column('amount_with_vat',Float)
     orderNo : Mapped[Optional[str]] = mapped_column('order_no',CustomString[25])
@@ -335,13 +333,13 @@ class salesCreditMemos(Base):
     custLedgerEntryNo : Mapped[int] = mapped_column('entry_id',Integer,nullable=False)
     postingDate : Mapped[date] = mapped_column('posting_date',Date)
     documentDate : Mapped[date] = mapped_column('document_date',Date)
-    sellToCustomerNo : Mapped[str] = mapped_column('customer_code',String[20])
-    shipToCode : Mapped[Optional[str]] = mapped_column('ship_to_code',String[10])
-    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',String[20])
-    shipmentMethodCode : Mapped[Optional[str]] = mapped_column('shipment_method_code',String[20])
-    locationCode : Mapped[Optional[str]] = mapped_column('location_code',String[20])
+    sellToCustomerNo : Mapped[str] = mapped_column('customer_code',CustomString[20])
+    shipToCode : Mapped[Optional[str]] = mapped_column('ship_to_code',CustomString[10])
+    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',CustomString[20])
+    shipmentMethodCode : Mapped[Optional[str]] = mapped_column('shipment_method_code',CustomString[20])
+    locationCode : Mapped[Optional[str]] = mapped_column('location_code',CustomString[20])
     currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
-    salespersonCode : Mapped[Optional[str]] = mapped_column('salesperson_code',String[20])
+    salespersonCode : Mapped[Optional[str]] = mapped_column('salesperson_code',CustomString[20])
     amount : Mapped[float] = mapped_column('amount',Float)
     amountIncludingVAT : Mapped[float] = mapped_column('amount_with_vat',Float)
     returnOrderNo : Mapped[Optional[str]] = mapped_column('return_order_no',CustomString[25])
@@ -377,10 +375,10 @@ class purchaseInvoices(Base):
     vendorLedgerEntryNo : Mapped[int] = mapped_column('entry_id',Integer,nullable=False)
     postingDate : Mapped[date] = mapped_column('posting_date', Date)
     documentDate : Mapped[date] = mapped_column('document_date',Date)
-    buyFromVendorNo : Mapped[str] = mapped_column('vendor_code',String[20])
-    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',String[20])
+    buyFromVendorNo : Mapped[str] = mapped_column('vendor_code',CustomString[20])
+    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',CustomString[20])
     currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
-    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',String[20])
+    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',CustomString[20])
     amount : Mapped[float] = mapped_column('amount',Float)
     amountIncludingVAT : Mapped[float] = mapped_column('amount_with_vat',Float)
     orderNo : Mapped[str] = mapped_column('order_no',CustomString[25])
@@ -396,10 +394,10 @@ class purchaseCreditMemos(Base):
     vendorLedgerEntryNo : Mapped[int] = mapped_column('entry_id',Integer,nullable=False)
     postingDate : Mapped[date] = mapped_column('posting_date', Date)
     documentDate : Mapped[date] = mapped_column('document_date',Date)
-    buyFromVendorNo : Mapped[str] = mapped_column('vendor_code',String[20])
-    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',String[20])
+    buyFromVendorNo : Mapped[str] = mapped_column('vendor_code',CustomString[20])
+    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',CustomString[20])
     currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
-    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',String[20])
+    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',CustomString[20])
     amount : Mapped[float] = mapped_column('amount',Float)
     amountIncludingVAT : Mapped[float] = mapped_column('amount_with_vat',Float)
     returnOrderNo : Mapped[Optional[str]] = mapped_column('return_order_no',CustomString[25])
@@ -431,7 +429,7 @@ class purchaseCreditMemoLines(Base):
 
     documentNo : Mapped[str] = mapped_column('document_no',String[25],nullable=False)
     lineNo : Mapped[int] = mapped_column('line_no',Integer)
-    type : Mapped[str] = mapped_column('item_type',CustomString[100])
+    type : Mapped[Optional[str]] = mapped_column('item_type',CustomString[100])
     no : Mapped[Optional[str]] = mapped_column('item_code',CustomString[20])
     quantity : Mapped[int] = mapped_column('quantity',Integer)
     unitCost : Mapped[float] = mapped_column('unit_cost',Float)
@@ -443,6 +441,82 @@ class purchaseCreditMemoLines(Base):
     @classmethod
     def get_update_keys(cls):
         return ['documentNo', 'lineNo']
+
+
+class purchaseOrders(Base):
+    __tablename__ = 'purchase_order'
+
+    no : Mapped[str] = mapped_column('document_no',String[25],nullable=False)
+    documentType : Mapped[str] = mapped_column('document_type',CustomString[100])
+    status : Mapped[Optional[str]] = mapped_column('document_status',CustomString[25])
+    postingDate : Mapped[date] = mapped_column('posting_date', Date)
+    documentDate : Mapped[date] = mapped_column('document_date',Date)
+    payToVendorNo : Mapped[str] = mapped_column('vendor_code',CustomString[20])
+    paymentMethodCode : Mapped[Optional[str]] = mapped_column('payment_method_code',CustomString[20])
+    currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
+    purchaserCode : Mapped[Optional[str]] = mapped_column('purchaser_code',CustomString[20])
+    amount : Mapped[float] = mapped_column('amount',Float)
+    amountIncludingVAT : Mapped[float] = mapped_column('amount_with_vat',Float)
+    partiallyInvoiced : Mapped[bool] = mapped_column('is_partially_invoiced',Boolean)
+    completelyReceived : Mapped[bool] = mapped_column('is_completely_received',Boolean)
+
+    @classmethod
+    def get_update_keys(cls) -> List[str]:
+        return ['no']
+
+
+class purchaseOrderLines(Base):
+    __tablename__ = 'purchase_order_line'
+
+    documentNo : Mapped[str] = mapped_column('document_no',String[25],nullable=False)
+    lineNo : Mapped[int] = mapped_column('line_no',Integer)
+    type : Mapped[Optional[str]] = mapped_column('item_type',CustomString[100])
+    no : Mapped[Optional[str]] = mapped_column('item_code',CustomString[20])
+    quantity : Mapped[int] = mapped_column('quantity',Integer)
+    unitCost : Mapped[float] = mapped_column('unit_cost',Float)
+    lineDiscount : Mapped[float] = mapped_column('discount_percentage',Float)
+    lineDiscountAmount : Mapped[float] = mapped_column('discount_amount',Float)
+    amount : Mapped[float] = mapped_column('amount',Float)
+    amountIncludingVAT : Mapped[float] = mapped_column('amount_with_vat',Float)
+
+    @classmethod
+    def get_update_keys(cls) -> List[str]:
+        return ['documentNo','lineNo']
+
+
+class purchaseReceipts(Base):
+    __tablename__ = 'purchase_receipt'
+
+    no : Mapped[str] = mapped_column('document_no',String[25],nullable=False)
+    postingDate : Mapped[date] = mapped_column('posting_date',Date)
+    documentDate : Mapped[date] = mapped_column('document_date',Date)
+    expectedReceiptDate : Mapped[date] = mapped_column('expected_receipt_date',Date)
+    orderNo : Mapped[Optional[str]] = mapped_column('order_no',CustomString[25])
+    payToVendorNo : Mapped[date] = mapped_column('vendor_code',CustomString[20])
+    locationCode : Mapped[Optional[str]] = mapped_column('location_code',CustomString[20])
+    currencyCode : Mapped[Optional[str]] = mapped_column('currency_code',String[10])
+
+    @classmethod
+    def get_update_keys(cls) -> List[str]:
+        return ['no']
+
+
+class purchaseReceiptLines(Base):
+    __tablename__ = 'purchase_receipt_line'
+
+    documentNo : Mapped[str] = mapped_column('document_no',String[25],nullable=False)
+    lineNo : Mapped[int] = mapped_column('line_no',Integer)
+    type : Mapped[Optional[str]] = mapped_column('item_type',CustomString[100])
+    no : Mapped[Optional[str]] = mapped_column('item_code',CustomString[20])
+    quantity : Mapped[int] = mapped_column('quantity',Integer)
+    unitCost : Mapped[float] = mapped_column('unit_cost',Float)
+    orderLineNo : Mapped[int] = mapped_column('order_line_no',Integer)
+
+    @classmethod
+    def get_update_keys(cls) -> List[str]:
+        return ['documentNo','lineNo']
+
+
 
 
 class Tables(str,Enum):
@@ -473,3 +547,7 @@ class Tables(str,Enum):
     purchaseInvoiceLines = 'detalle_facturas_de_compra'
     purchaseCreditMemos = 'notas_de_credito_de_compra'
     purchaseCreditMemoLines = 'detalle_notas_de_credito_de_compra'
+    purchaseOrders = 'pedidos_de_compra'
+    purchaseOrderLines = 'detalle_pedidos_de_compra'
+    purchaseReceipts = 'recepciones_de_compra'
+    purchaseReceiptLines = 'detalle_recepciones_de_compra'
