@@ -15,12 +15,10 @@ def get_models_to_sync(table_filter : Optional[Union[Tables,List[Tables]]] = Non
     models_module = importlib.import_module('.db_model',package='models')
     try:
         if table_filter: 
-                models = [getattr(models_module,t.name) for t in table_filter]
+            models = [getattr(models_module,t.name) for t in table_filter]
         else:
-            models = [
-                cls for _,cls in inspect.getmembers(models_module,inspect.isclass) 
-                if issubclass(cls,Base) and cls is not Base
-                ]
+            models = [getattr(models_module,member.name) for member in Tables]
+            
     except Exception as e:
         raise ModelRetrievalError(f'Cannot retrieve the SQLAlchemy models from {models_module} due to following error : {e}')   
     
