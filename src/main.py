@@ -1,6 +1,4 @@
 from config.settings import Config
-from config.logging_config import setup_logging
-import logging
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Optional, List, Type
 from models.db_model import Tables

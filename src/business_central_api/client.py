@@ -107,17 +107,20 @@ class BusinessCentralAPIClient(requests.Session):
         """Paginated GET request using @odata.next link parameter, which is available on paginated responses of the API."""
 
         response = self.request(url=url,method='GET',headers=self.headers,params=params)
-
         result = response.json()
-        next_link = result.get('@odata.nexLlink')
+
+        all_values = result.get('value',[])
+
+        next_link = result.get('@odata.nextLink')
 
         while next_link:
+
             next_response = self.request(url=next_link,method='GET',headers=self.headers)
             next_result = next_response.json()
-            result.get('value').extend(next_result.get('value'))
+            all_values.extend(next_result.get('value',[]))
             next_link = next_result.get('@odata.nextLink')
         
-        return result.get('value')
+        return all_values
     
     def create_parameters(self,last_created_at : datetime = None, last_modified_at : datetime = None, order_by : str = None, select : List[str] = None, offset : int =None, limit : int = None, custom_filter : str = None):
         """Dinamically generate parameters dictionary for the request, using odata standard parameters: $filter, $orderBy, $select, $offset and $limit"""
@@ -169,6 +172,7 @@ class BusinessCentralAPIClient(requests.Session):
         return result
     
     def post_usd_exchange_rate(self, starting_date : str, rate_amount : float):
+        """Allows to insert the exchange rate for USD currency for a specific date"""
 
         request_body = {
             
