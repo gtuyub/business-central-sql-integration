@@ -23,12 +23,10 @@ def sync_table(model : Type[Base], api_client : BusinessCentralAPIClient, db: Se
     #exclude surogate key from select filter
     fields.remove('id')
 
-    #get last created and last modified timestamp:
     timestamps = model.get_sync_timestamps(db)
 
     logger.info(f'Iniciando proceso de sincronizacion.\n tabla : {table_name}')
 
-    #get records created after last created timestamp, and records modified after last modified timestamp:
     new_records = api_client.get_with_params(entity=model_name,last_created_at=timestamps['last_created'],select=fields)
     modified_records = api_client.get_with_params(entity=model_name,last_modified_at=timestamps['last_modified'],select=fields)
     #remove new records from list of modified records:
