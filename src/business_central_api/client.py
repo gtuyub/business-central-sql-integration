@@ -2,7 +2,7 @@ from msal import ConfidentialClientApplication
 import requests
 from datetime import datetime
 import urllib.parse
-from typing import List
+from typing import List, Dict, Any
 from .exceptions import BusinessCentralClientRequestError, TokenRequestError
 import logging
 
@@ -157,17 +157,17 @@ class BusinessCentralAPIClient(requests.Session):
                 params.update({'$filter':f'{custom_filter}'})  
         return params
 
-    def get_with_params(self, entity : str, last_created_at : datetime = None, last_modified_at : datetime = None, order_by : str = None, select : List[str] = None, offset : int = None, limit : int = None, custom_filter : str = None):
-        """Get records from a specific API page entity, using custom odata parameters."""
+    def get_with_params(self, endpoint : str, last_created_at : datetime = None, last_modified_at : datetime = None, order_by : str = None, select : List[str] = None, offset : int = None, limit : int = None, custom_filter : str = None)-> List[Dict[str,Any]]:
+        """Get records from a specific API endpoint, using custom odata parameters."""
 
         params = self.create_parameters(last_created_at,last_modified_at,order_by,select,offset,limit,custom_filter)
-        result = self.paginated_get_request(url=entity,params=params)
+        result = self.paginated_get_request(url=endpoint,params=params)
 
         if result:
-            logger.info(f'obtained {len(result)} items from entity {entity}.')
+            logger.info(f'obtained {len(result)} items from entity {endpoint}.')
 
         else:
-            logger.warning(f'No items in response for entity {entity}')
+            logger.warning(f'No items in response for entity {endpoint}')
 
         return result
     
